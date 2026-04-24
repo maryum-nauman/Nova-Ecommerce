@@ -13,6 +13,21 @@
         android:theme="@style/Theme.NovaEcommerce">
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.Onboarding"
+            android:exported="false" />
+        <activity
+            android:name=".activities.Login"
+            android:exported="false" />
+        <activity
+            android:name=".activities.SignUp"
+            android:exported="false" />
+        <activity
+            android:name=".activities.Dashboard"
+            android:exported="false" />
+        <activity
+            android:name=".activities.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

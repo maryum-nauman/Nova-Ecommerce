@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "643425900938",
+    "project_id": "nova-ecommerce-cb3bf",
+    "storage_bucket": "nova-ecommerce-cb3bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643425900938:android:00e293c1af598fab8b1073",
+        "android_client_info": {
+          "package_name": "com.example.nova_ecommerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgNQRAp369wLyenRZgGWphLy17ESin5_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
