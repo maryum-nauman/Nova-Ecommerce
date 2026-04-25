@@ -25,7 +25,6 @@ public class Onboarding extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Onboarding.this, Login.class);
                 startActivity(intent);
-                // We finish() so the user can't go back to onboarding after logging in
                 finish();
             }
         });

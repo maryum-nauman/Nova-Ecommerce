@@ -1,8 +1,10 @@
 package com.example.nova_ecommerce.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences; // Added
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox; // Added
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,7 +14,11 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Login extends AppCompatActivity {
     private EditText etEmail, etPassword;
+    private CheckBox cbRememberMe; // Added
     private FirebaseAuth mAuth;
+    private SharedPreferences sharedPreferences; // Added
+    private static final String PREF_NAME = "NovaPrefs";
+    private static final String KEY_REMEMBER = "isRemembered";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,12 +26,17 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+        sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
+        cbRememberMe = findViewById(R.id.cbRememberMe); // Added
         Button btnLogin = findViewById(R.id.btnLogin);
         TextView tvSignUp = findViewById(R.id.tvGoToSignUp);
 
-        if (mAuth.getCurrentUser() != null) {
+        // CHECK IF ALREADY LOGGED IN VIA REMEMBER ME
+        boolean isRemembered = sharedPreferences.getBoolean(KEY_REMEMBER, false);
+        if (mAuth.getCurrentUser() != null && isRemembered) {
             startActivity(new Intent(Login.this, Dashboard.class));
             finish();
         }
@@ -42,8 +53,12 @@ public class Login extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, pass)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
+                            // SAVE REMEMBER ME STATE
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean(KEY_REMEMBER, cbRememberMe.isChecked());
+                            editor.apply();
+
                             Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
-                            // Change 'MainActivity' to your actual dashboard activity
                             startActivity(new Intent(Login.this, Dashboard.class));
                             finish();
                         } else {
