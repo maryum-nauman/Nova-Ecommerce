@@ -4,30 +4,32 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/tvFavTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
+        android:text="My Favorites"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:padding="16dp" />
 
     <TextView
-        android:id="@+id/tvEmpty"
+        android:id="@+id/tvEmptyFav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="No products found"
+        android:text="No favorites yet"
         android:textSize="16sp"
         android:textColor="#757575"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerProducts"
+        android:id="@+id/recyclerFavorites"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/tvFavTitle"
         android:padding="8dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical"
-        android:nestedScrollingEnabled="true" />
+        android:clipToPadding="false" />
 
 </RelativeLayout>

@@ -3,6 +3,9 @@ package com.example.nova_ecommerce.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,39 +22,72 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Dashboard extends AppCompatActivity {
 
+    // Keep ONE instance of ShopFragment so fullList is never lost
+    private ShopFragment shopFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        // ── Logout ────────────────────────────────────────────────
         ImageButton btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
-            // 1. Sign out from Firebase Authentication
             FirebaseAuth.getInstance().signOut();
-
-            // 2. Clear Local Session Management (SharedPreferences)
-            SharedPreferences sharedPreferences = getSharedPreferences("NovaPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear(); // This removes "Remember Me" data
-            editor.apply();
-
-            // 3. Navigate back to Login Screen
+            getSharedPreferences("NovaPrefs", MODE_PRIVATE)
+                    .edit().clear().apply();
             Intent intent = new Intent(Dashboard.this, Login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
 
+        // ── Search ────────────────────────────────────────────────
+        EditText etSearch = findViewById(R.id.etSearch);
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s,
+                                          int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s,
+                                      int start, int before, int count) {
+                // Only filter when ShopFragment is active
+                Fragment current = getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_container);
+                if (current instanceof ShopFragment) {
+                    ((ShopFragment) current)
+                            .filterProducts(s.toString().trim());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // ── Bottom Navigation ─────────────────────────────────────
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
+            // Clear search bar when switching tabs
+            etSearch.setText("");
+
             Fragment selectedFragment = null;
             int id = item.getItemId();
 
-            if (id == R.id.nav_shop) selectedFragment = new ShopFragment();
-            else if (id == R.id.nav_category) selectedFragment = new CategoryFragment();
-            else if (id == R.id.nav_cart) selectedFragment = new CartFragment();
-            else if (id == R.id.nav_fav) selectedFragment = new FavoritesFragment();
-            else if (id == R.id.nav_profile) selectedFragment = new ProfileFragment();
+            if (id == R.id.nav_shop) {
+                // Always reuse same ShopFragment instance
+                if (shopFragment == null) shopFragment = new ShopFragment();
+                selectedFragment = shopFragment;
+            } else if (id == R.id.nav_category) {
+                selectedFragment = new CategoryFragment();
+            } else if (id == R.id.nav_cart) {
+                selectedFragment = new CartFragment();
+            } else if (id == R.id.nav_fav) {
+                selectedFragment = new FavoritesFragment();
+            } else if (id == R.id.nav_profile) {
+                selectedFragment = new ProfileFragment();
+            }
 
             if (selectedFragment != null) {
                 loadFragment(selectedFragment);
@@ -59,8 +95,10 @@ public class Dashboard extends AppCompatActivity {
             return true;
         });
 
-        // Set default fragment
-        loadFragment(new ShopFragment());
+        // ── Default: open Shop tab ────────────────────────────────
+        shopFragment = new ShopFragment();
+        loadFragment(shopFragment);
+        bottomNav.setSelectedItemId(R.id.nav_shop);
     }
 
     private void loadFragment(Fragment fragment) {
