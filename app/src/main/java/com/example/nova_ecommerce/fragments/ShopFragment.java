@@ -59,6 +59,14 @@ public class ShopFragment extends Fragment {
         adapter = new ProductAdapter(getContext(), productList);
         recyclerView.setAdapter(adapter);
 
+        adapter.setOnProductClickListener(product -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container,
+                            ProductDetailFragment.newInstance(product.getId()))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         loadProducts();
         return view;
     }

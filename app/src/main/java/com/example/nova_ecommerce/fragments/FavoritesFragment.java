@@ -53,6 +53,14 @@ public class FavoritesFragment extends Fragment {
         adapter = new ProductAdapter(getContext(), favoriteList);
         recyclerFavorites.setAdapter(adapter);
 
+        adapter.setOnProductClickListener(product -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container,
+                            ProductDetailFragment.newInstance(product.getId()))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         loadFavorites();
         return view;
     }

@@ -67,6 +67,14 @@ public class CategoryFragment extends Fragment {
         productAdapter = new ProductAdapter(getContext(), productList);
         recyclerProducts.setAdapter(productAdapter);
 
+        productAdapter.setOnProductClickListener(product -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container,
+                            ProductDetailFragment.newInstance(product.getId()))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         loadCategories();
         return view;
     }
