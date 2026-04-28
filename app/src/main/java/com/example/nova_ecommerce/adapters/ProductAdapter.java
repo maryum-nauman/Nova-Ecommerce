@@ -111,6 +111,41 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 })
                 .into(holder.imgProduct);
 
+        holder.btnFavorite.setImageResource(
+                product.isFavorite()
+                        ? R.drawable.ic_favorite
+                        : R.drawable.ic_favorite_border);
+
+        // ── Favorite toggle ───────────────────────────────────
+        holder.btnFavorite.setOnClickListener(v -> {
+            boolean nowFav = !product.isFavorite();
+            product.setFavorite(nowFav);
+            notifyItemChanged(position);
+
+            if (userId == null) return;
+
+            DatabaseReference favRef = FirebaseDatabase.getInstance(
+                            "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+                    ).getReference("users")
+                    .child(userId)
+                    .child("favorites")
+                    .child(product.getId());
+
+            if (nowFav) {
+                favRef.setValue(product)
+                        .addOnSuccessListener(unused ->
+                                Toast.makeText(context,
+                                        "Added to favorites!",
+                                        Toast.LENGTH_SHORT).show());
+            } else {
+                favRef.removeValue()
+                        .addOnSuccessListener(unused ->
+                                Toast.makeText(context,
+                                        "Removed from favorites",
+                                        Toast.LENGTH_SHORT).show());
+            }
+        });
+
         // ── Add to cart ───────────────────────────────────────
         holder.btnAddToCart.setOnClickListener(v -> {
             CartItem item = new CartItem(

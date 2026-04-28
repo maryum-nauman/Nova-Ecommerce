@@ -213,7 +213,7 @@ public class ProductDetailFragment extends Fragment {
         btnFavorite.setImageResource(
                 currentProduct.isFavorite()
                         ? R.drawable.ic_favorite
-                        : R.drawable.ic_favorite);
+                        : R.drawable.ic_favorite_border);
     }
 
     private void loadRelatedProducts(String category) {

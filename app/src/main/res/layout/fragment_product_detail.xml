@@ -24,25 +24,27 @@
                 android:background="#E0E0E0" />
 
             <!-- Back button -->
+
+            <!-- Favorite button -->
             <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_margin="16dp"
                 android:layout_gravity="top|start"
+                android:layout_margin="16dp"
                 android:background="@drawable/circle_white_bg"
-                android:src="@drawable/ic_back"
+                android:elevation="4dp"
                 android:padding="8dp"
-                android:elevation="4dp" />
+                android:src="@drawable/ic_back" />
 
-            <!-- Favorite button -->
             <ImageButton
                 android:id="@+id/btnFavoriteDetail"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_margin="16dp"
                 android:layout_gravity="top|end"
-                android:src="@drawable/ic_favorite"
+                android:src="@drawable/ic_favorite_border"
+                android:background="@drawable/circle_white_bg"
                 android:padding="8dp"
                 android:elevation="4dp" />
 
