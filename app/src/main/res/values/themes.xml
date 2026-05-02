@@ -6,4 +6,11 @@
     </style>
 
     <style name="Theme.NovaEcommerce" parent="Base.Theme.NovaEcommerce" />
+    <style name="MaterialAlertDialog_Nova" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Nova.Radius16</item>
+        <item name="colorPrimary">#009688</item> </style>
+
+    <style name="ShapeAppearanceOverlay.Nova.Radius16" parent="">
+        <item name="cornerSize">16dp</item>
+    </style>
 </resources>
