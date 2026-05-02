@@ -109,6 +109,31 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
+            <RadioGroup
+                android:id="@+id/rgRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <RadioButton
+                    android:id="@+id/rbUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User"
+                    android:checked="true"
+                    android:buttonTint="#009688" />
+
+                <RadioButton
+                    android:id="@+id/rbAdmin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:text="Admin"
+                    android:buttonTint="#009688" />
+            </RadioGroup>
+
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
