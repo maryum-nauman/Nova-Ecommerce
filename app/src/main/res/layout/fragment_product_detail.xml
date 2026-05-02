@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#F5F5F7">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ── PRODUCT IMAGE with back + fav buttons ── -->
+        <!-- ── Product Image with back + fav overlay ─────────── -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="300dp">
@@ -20,64 +19,69 @@
                 android:id="@+id/imgProductDetail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:background="#E0E0E0" />
+                android:scaleType="centerCrop" />
+
+            <!-- Gradient overlay at bottom of image -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/gradient_dark_bottom" />
 
             <!-- Back button -->
-
-            <!-- Favorite button -->
             <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_gravity="top|start"
-                android:layout_margin="16dp"
+                android:layout_margin="12dp"
                 android:background="@drawable/circle_white_bg"
-                android:elevation="4dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_back" />
+                android:src="@drawable/ic_back"
+                android:padding="8dp" />
 
+            <!-- Favorite button -->
             <ImageButton
                 android:id="@+id/btnFavoriteDetail"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_margin="16dp"
                 android:layout_gravity="top|end"
-                android:src="@drawable/ic_favorite_border"
+                android:layout_margin="12dp"
                 android:background="@drawable/circle_white_bg"
+                android:src="@drawable/ic_favorite_border"
                 android:padding="8dp"
-                android:elevation="4dp" />
+                app:tint="@color/colorPrimary" />
 
         </FrameLayout>
 
-        <!-- ── PRODUCT INFO CARD ── -->
+        <!-- ── Product Info Card ──────────────────────────────── -->
         <androidx.cardview.widget.CardView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="-24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp"
             app:cardBackgroundColor="#FFFFFF">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="18dp">
 
                 <!-- Category chip -->
                 <TextView
                     android:id="@+id/tvDetailCategory"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/category_chip_bg"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:background="@drawable/badge_hot_deal"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
                     android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:textSize="12sp"
-                    android:textColor="@color/colorPrimary"
-                    android:layout_marginBottom="10dp" />
+                    android:paddingBottom="4dp" />
 
                 <!-- Product name -->
                 <TextView
@@ -86,8 +90,8 @@
                     android:layout_height="wrap_content"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="#1A1A2E"
+                    android:layout_marginTop="10dp" />
 
                 <!-- Rating row -->
                 <LinearLayout
@@ -95,31 +99,32 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginTop="8dp">
 
-                    <TextView
+                    <RatingBar
+                        android:id="@+id/ratingBarDetail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="★★★★★"
-                        android:textColor="#FFC107"
-                        android:textSize="16sp" />
+                        android:numStars="5"
+                        android:stepSize="0.5"
+                        android:isIndicator="true"
+                        style="@style/Widget.AppCompat.RatingBar.Small" />
 
                     <TextView
                         android:id="@+id/tvDetailRating"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textColor="#212121" />
+                        android:textSize="13sp"
+                        android:textColor="#555555"
+                        android:layout_marginStart="6dp" />
 
                     <TextView
                         android:id="@+id/tvDetailReviewCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:textSize="13sp"
-                        android:textColor="#757575" />
+                        android:textSize="12sp"
+                        android:textColor="#AAAAAA"
+                        android:layout_marginStart="4dp" />
 
                 </LinearLayout>
 
@@ -131,14 +136,15 @@
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="@color/colorPrimary"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginTop="10dp" />
 
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="#F0F0F0"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="14dp" />
 
                 <!-- Description -->
                 <TextView
@@ -147,123 +153,168 @@
                     android:text="Description"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="#1A1A2E" />
 
                 <TextView
                     android:id="@+id/tvDetailDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:textColor="#555555"
+                    android:textSize="13sp"
+                    android:textColor="#666666"
                     android:lineSpacingMultiplier="1.5"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Delivery info -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚚"
-                        android:textSize="18sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="Free delivery on orders above Rs. 2,000"
-                        android:textSize="13sp"
-                        android:textColor="#555555" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="↩️"
-                        android:textSize="18sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="7-day easy returns"
-                        android:textSize="13sp"
-                        android:textColor="#555555" />
-                </LinearLayout>
+                    android:layout_marginTop="6dp" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ── ACTION BUTTONS ── -->
+        <!-- ── Action Buttons ─────────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="12dp">
+            android:padding="16dp"
+            android:layout_marginTop="8dp">
 
             <Button
                 android:id="@+id/btnDetailAddToCart"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="50dp"
-                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:text="Add to Cart"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#FFFFFF"
                 android:textColor="@color/colorPrimary"
-                android:backgroundTint="#E0F2F1"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                android:strokeColor="@color/colorPrimary"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <Button
                 android:id="@+id/btnBuyNow"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="50dp"
+                android:layout_weight="1"
                 android:text="Buy Now"
-                android:textColor="#FFFFFF"
                 android:backgroundTint="@color/colorPrimary"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                android:textColor="#FFFFFF"
+                style="@style/Widget.MaterialComponents.Button" />
 
         </LinearLayout>
 
-        <!-- ── RELATED PRODUCTS ── -->
-        <TextView
+        <!-- ── Reviews Section ───────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Related Products"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="#212121"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="8dp" />
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerRelated"
+            <!-- Reviews header + Write Review button -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="10dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="22dp"
+                        android:background="@color/colorPrimary"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⭐ Reviews"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A2E" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnWriteReview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Write Review"
+                    android:textSize="12sp"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColor="#FFFFFF"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+            </RelativeLayout>
+
+            <!-- Empty reviews state -->
+            <TextView
+                android:id="@+id/tvNoReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No reviews yet. Be the first!"
+                android:gravity="center"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:visibility="gone" />
+
+            <!-- Reviews list -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingBottom="8dp" />
+
+        </LinearLayout>
+
+        <!-- ── Related Products ───────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:clipToPadding="false"
-            android:nestedScrollingEnabled="false" />
+            android:orientation="vertical"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="10dp">
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="22dp"
+                    android:background="@color/colorPrimary"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛍️ Related Products"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A2E" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerRelated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

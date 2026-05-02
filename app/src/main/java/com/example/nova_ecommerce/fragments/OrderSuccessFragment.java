@@ -36,8 +36,8 @@ public class OrderSuccessFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_order_success,
-                container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_order_success, container, false);
 
         TextView tvOrderId       = view.findViewById(R.id.tvOrderId);
         TextView tvSuccessTotal  = view.findViewById(R.id.tvSuccessTotal);
@@ -47,14 +47,19 @@ public class OrderSuccessFragment extends Fragment {
         if (getArguments() != null) {
             tvOrderId.setText("Order ID: "
                     + getArguments().getString(ARG_ORDER_ID));
-            tvSuccessTotal.setText("Rs. " + String.format("%,.0f",
+            tvSuccessTotal.setText("Rs. "
+                    + String.format("%,.0f",
                     getArguments().getDouble(ARG_TOTAL)));
             tvPaymentMethod.setText("Payment: "
                     + getArguments().getString(ARG_PAYMENT_METHOD));
         }
 
-        // Go back to Shop
+        // Back to shop — clear back stack so user can't go back to checkout
         btnContinue.setOnClickListener(v -> {
+            getParentFragmentManager()
+                    .popBackStack(null,
+                            androidx.fragment.app.FragmentManager
+                                    .POP_BACK_STACK_INCLUSIVE);
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new ShopFragment())
                     .commit();

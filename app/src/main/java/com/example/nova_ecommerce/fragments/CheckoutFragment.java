@@ -32,55 +32,52 @@ import java.util.Map;
 
 public class CheckoutFragment extends Fragment {
 
-    // Delivery info fields
-    private EditText etFullName, etPhone, etEmail;
-    private EditText etAddress, etCity, etPostalCode;
-
-    // Payment
-    private RadioGroup rgPayment;
-    private RadioButton rbCashOnDelivery, rbCreditCard, rbEasyPaisa;
-
-    // Card fields (shown only when card selected)
-    private View cardFieldsLayout;
-    private EditText etCardNumber, etCardExpiry, etCardCVV;
-
-    // Order summary
-    private TextView tvOrderTotal, tvItemCount;
-    private Button btnPlaceOrder;
+    private EditText  etFullName, etPhone, etEmail;
+    private EditText  etAddress, etCity, etPostalCode;
+    private RadioGroup   rgPayment;
+    private RadioButton  rbCashOnDelivery, rbCreditCard, rbEasyPaisa;
+    private View         cardFieldsLayout;
+    private EditText     etCardNumber, etCardExpiry, etCardCVV;
+    private TextView     tvOrderTotal, tvItemCount;
+    private Button       btnPlaceOrder;
 
     private CartDatabaseHelper cartDb;
-    private String userId;
-    private DatabaseReference ordersRef;
+    private String             userId;
+
+    // ── NEW path: users/{userId}/orders ───────────────────────
+    private DatabaseReference userOrdersRef;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_checkout,
-                container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_checkout, container, false);
 
-        // Init Firebase
+        // ── Firebase ──────────────────────────────────────────
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            userId = FirebaseAuth.getInstance()
+                    .getCurrentUser().getUid();
+
+            // Orders now live under users/{userId}/orders
+            userOrdersRef = FirebaseDatabase.getInstance(
+                    "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+            ).getReference("users").child(userId).child("orders");
         }
-        ordersRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-        ).getReference("orders");
 
         cartDb = CartDatabaseHelper.getInstance(getContext());
 
-        // Bind views
-        etFullName    = view.findViewById(R.id.etFullName);
-        etPhone       = view.findViewById(R.id.etPhone);
-        etEmail       = view.findViewById(R.id.etEmail);
-        etAddress     = view.findViewById(R.id.etAddress);
-        etCity        = view.findViewById(R.id.etCity);
-        etPostalCode  = view.findViewById(R.id.etPostalCode);
-        tvOrderTotal  = view.findViewById(R.id.tvOrderTotal);
-        tvItemCount   = view.findViewById(R.id.tvItemCount);
-        btnPlaceOrder = view.findViewById(R.id.btnPlaceOrder);
-
+        // ── Bind views ────────────────────────────────────────
+        etFullName       = view.findViewById(R.id.etFullName);
+        etPhone          = view.findViewById(R.id.etPhone);
+        etEmail          = view.findViewById(R.id.etEmail);
+        etAddress        = view.findViewById(R.id.etAddress);
+        etCity           = view.findViewById(R.id.etCity);
+        etPostalCode     = view.findViewById(R.id.etPostalCode);
+        tvOrderTotal     = view.findViewById(R.id.tvOrderTotal);
+        tvItemCount      = view.findViewById(R.id.tvItemCount);
+        btnPlaceOrder    = view.findViewById(R.id.btnPlaceOrder);
         rgPayment        = view.findViewById(R.id.rgPayment);
         rbCashOnDelivery = view.findViewById(R.id.rbCashOnDelivery);
         rbCreditCard     = view.findViewById(R.id.rbCreditCard);
@@ -90,26 +87,21 @@ public class CheckoutFragment extends Fragment {
         etCardExpiry     = view.findViewById(R.id.etCardExpiry);
         etCardCVV        = view.findViewById(R.id.etCardCVV);
 
-        // Pre-fill email from Firebase Auth
+        // Pre-fill email
         if (FirebaseAuth.getInstance().getCurrentUser() != null
-                && FirebaseAuth.getInstance().getCurrentUser().getEmail() != null) {
-            etEmail.setText(
-                    FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                && FirebaseAuth.getInstance()
+                .getCurrentUser().getEmail() != null) {
+            etEmail.setText(FirebaseAuth.getInstance()
+                    .getCurrentUser().getEmail());
         }
 
-        // Show/hide card fields based on payment selection
-        rgPayment.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.rbCreditCard) {
-                cardFieldsLayout.setVisibility(View.VISIBLE);
-            } else {
-                cardFieldsLayout.setVisibility(View.GONE);
-            }
-        });
+        // Show/hide card fields
+        rgPayment.setOnCheckedChangeListener((group, checkedId) ->
+                cardFieldsLayout.setVisibility(
+                        checkedId == R.id.rbCreditCard
+                                ? View.VISIBLE : View.GONE));
 
-        // Load order summary
         loadOrderSummary();
-
-        // Place order
         btnPlaceOrder.setOnClickListener(v -> validateAndPlaceOrder());
 
         return view;
@@ -130,70 +122,66 @@ public class CheckoutFragment extends Fragment {
         String city       = etCity.getText().toString().trim();
         String postalCode = etPostalCode.getText().toString().trim();
 
-        // Validate required fields
         if (fullName.isEmpty()) {
             etFullName.setError("Full name is required");
-            etFullName.requestFocus();
-            return;
+            etFullName.requestFocus(); return;
         }
         if (phone.isEmpty() || phone.length() < 10) {
             etPhone.setError("Enter a valid phone number");
-            etPhone.requestFocus();
-            return;
+            etPhone.requestFocus(); return;
         }
         if (email.isEmpty() || !email.contains("@")) {
             etEmail.setError("Enter a valid email");
-            etEmail.requestFocus();
-            return;
+            etEmail.requestFocus(); return;
         }
         if (address.isEmpty()) {
             etAddress.setError("Address is required");
-            etAddress.requestFocus();
-            return;
+            etAddress.requestFocus(); return;
         }
         if (city.isEmpty()) {
             etCity.setError("City is required");
-            etCity.requestFocus();
-            return;
+            etCity.requestFocus(); return;
         }
 
-        // Validate card fields if credit card selected
         if (rbCreditCard.isChecked()) {
             String cardNum = etCardNumber.getText().toString().trim();
             String expiry  = etCardExpiry.getText().toString().trim();
             String cvv     = etCardCVV.getText().toString().trim();
-
             if (cardNum.length() < 16) {
                 etCardNumber.setError("Enter valid 16-digit card number");
-                etCardNumber.requestFocus();
-                return;
+                etCardNumber.requestFocus(); return;
             }
             if (expiry.isEmpty()) {
                 etCardExpiry.setError("Enter card expiry");
-                etCardExpiry.requestFocus();
-                return;
+                etCardExpiry.requestFocus(); return;
             }
             if (cvv.length() < 3) {
                 etCardCVV.setError("Enter valid CVV");
-                etCardCVV.requestFocus();
-                return;
+                etCardCVV.requestFocus(); return;
             }
         }
 
-        // Get selected payment method
         String paymentMethod = "Cash on Delivery";
         int selectedId = rgPayment.getCheckedRadioButtonId();
-        if (selectedId == R.id.rbCreditCard)  paymentMethod = "Credit Card";
-        else if (selectedId == R.id.rbEasyPaisa) paymentMethod = "EasyPaisa";
+        if (selectedId == R.id.rbCreditCard)
+            paymentMethod = "Credit Card";
+        else if (selectedId == R.id.rbEasyPaisa)
+            paymentMethod = "EasyPaisa";
 
-        // Build order object
-        placeOrder(fullName, phone, email, address,
-                city, postalCode, paymentMethod);
+        placeOrder(fullName, phone, email,
+                address, city, postalCode, paymentMethod);
     }
 
     private void placeOrder(String fullName, String phone, String email,
                             String address, String city, String postalCode,
                             String paymentMethod) {
+
+        if (userOrdersRef == null) {
+            Toast.makeText(getContext(),
+                    "Please log in to place an order",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Placing Order...");
@@ -201,26 +189,24 @@ public class CheckoutFragment extends Fragment {
         List<CartItem> cartItems = cartDb.getAllItems();
         double total = cartDb.getTotal();
 
-        // Build items list for Firebase
+        // Build items list — now includes categoryId
         List<Map<String, Object>> itemsList = new ArrayList<>();
         for (CartItem item : cartItems) {
             Map<String, Object> itemMap = new HashMap<>();
-            itemMap.put("productId", item.getProductId());
-            itemMap.put("name",      item.getName());
-            itemMap.put("price",     item.getPrice());
-            itemMap.put("quantity",  item.getQuantity());
-            itemMap.put("imageURL",  item.getImageUrl());
+            itemMap.put("productId",  item.getProductId());
+            itemMap.put("categoryId", item.getCategoryId()); // ← new field
+            itemMap.put("name",       item.getName());
+            itemMap.put("price",      item.getPrice());
+            itemMap.put("quantity",   item.getQuantity());
+            itemMap.put("imageURL",   item.getImageUrl());
             itemsList.add(itemMap);
         }
 
-        // Generate order timestamp
         String timestamp = new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 .format(new Date());
 
-        // Build full order map
         Map<String, Object> order = new HashMap<>();
-        order.put("userId",        userId);
         order.put("fullName",      fullName);
         order.put("phone",         phone);
         order.put("email",         email);
@@ -232,15 +218,14 @@ public class CheckoutFragment extends Fragment {
         order.put("totalAmount",   total);
         order.put("status",        "Pending");
         order.put("timestamp",     timestamp);
+        // userId not needed inside the order since it's
+        // already scoped under users/{userId}/orders
 
-        // Save to Firebase under orders/{userId}/{orderId}
-        String orderId = ordersRef.child(userId).push().getKey();
-        ordersRef.child(userId).child(orderId).setValue(order)
+        // ── Write to users/{userId}/orders/{orderId} ──────────
+        String orderId = userOrdersRef.push().getKey();
+        userOrdersRef.child(orderId).setValue(order)
                 .addOnSuccessListener(unused -> {
-                    // Clear SQLite cart after successful order
                     cartDb.clearCart();
-
-                    // Navigate to success screen
                     getParentFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container,
                                     OrderSuccessFragment.newInstance(
