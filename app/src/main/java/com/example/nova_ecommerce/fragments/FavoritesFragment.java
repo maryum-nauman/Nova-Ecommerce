@@ -27,39 +27,47 @@ import java.util.List;
 
 public class FavoritesFragment extends Fragment {
 
-    private RecyclerView recyclerFavorites;
-    private ProductAdapter adapter;
-    private List<Product> favoriteList = new ArrayList<>();
-    private TextView tvEmptyFav;
+    private RecyclerView    recyclerFavorites;
+    private ProductAdapter  adapter;
+    private View layoutEmptyFav;
     private DatabaseReference favRef;
-    private String userId;
+
+    private final List<Product> favoriteList = new ArrayList<>();
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_favorites, container, false);
 
         recyclerFavorites = view.findViewById(R.id.recyclerFavorites);
-        tvEmptyFav        = view.findViewById(R.id.tvEmptyFav);
+        layoutEmptyFav = view.findViewById(R.id.layoutEmptyFav);
 
+        // favorites path hasn't changed: users/{userId}/favorites
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            favRef = FirebaseDatabase.getInstance()
-                    .getReference("users").child(userId).child("favorites");
+            String userId = FirebaseAuth.getInstance()
+                    .getCurrentUser().getUid();
+            favRef = FirebaseDatabase.getInstance(
+                    "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+            ).getReference("users").child(userId).child("favorites");
         }
 
-        recyclerFavorites.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerFavorites.setLayoutManager(
+                new GridLayoutManager(getContext(), 2));
         adapter = new ProductAdapter(getContext(), favoriteList);
         recyclerFavorites.setAdapter(adapter);
 
-        adapter.setOnProductClickListener(product -> {
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container,
-                            ProductDetailFragment.newInstance(product.getId()))
-                    .addToBackStack(null)
-                    .commit();
-        });
+        // ── Pass BOTH productId and categoryId to detail ──────
+        adapter.setOnProductClickListener(product ->
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container,
+                                ProductDetailFragment.newInstance(
+                                        product.getId(),
+                                        product.getCategoryId())) // ← new
+                        .addToBackStack(null)
+                        .commit());
 
         loadFavorites();
         return view;
@@ -77,11 +85,15 @@ public class FavoritesFragment extends Fragment {
                     if (product != null) {
                         product.setId(child.getKey());
                         product.setFavorite(true);
+                        // categoryId and categoryName are stored
+                        // inside the favorite object in Firebase
+                        // because we called favRef.setValue(product)
+                        // which serializes the full Product object
                         favoriteList.add(product);
                     }
                 }
                 adapter.notifyDataSetChanged();
-                tvEmptyFav.setVisibility(
+                layoutEmptyFav.setVisibility(
                         favoriteList.isEmpty() ? View.VISIBLE : View.GONE);
             }
 

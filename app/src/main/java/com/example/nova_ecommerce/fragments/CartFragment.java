@@ -19,33 +19,37 @@ import com.example.nova_ecommerce.adapters.CartAdapter;
 import com.example.nova_ecommerce.database.CartDatabaseHelper;
 import com.example.nova_ecommerce.models.CartItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CartFragment extends Fragment {
 
-    private RecyclerView recyclerCart;
-    private CartAdapter cartAdapter;
-    private List<CartItem> cartList;
-    private TextView tvTotal, tvEmptyCart;
-    private Button btnCheckout;
-    private CartDatabaseHelper cartDb;
+    private RecyclerView         recyclerCart;
+    private CartAdapter          cartAdapter;
+    private final List<CartItem> cartList = new ArrayList<>();
+    private TextView             tvTotal, tvEmptyCart;
+    private Button               btnCheckout;
+    private CartDatabaseHelper   cartDb;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_cart, container, false);
+        View view = inflater.inflate(
+                R.layout.fragment_cart, container, false);
 
         recyclerCart = view.findViewById(R.id.recyclerCart);
         tvTotal      = view.findViewById(R.id.tvTotal);
         tvEmptyCart  = view.findViewById(R.id.tvEmptyCart);
         btnCheckout  = view.findViewById(R.id.btnCheckout);
 
-        cartDb   = CartDatabaseHelper.getInstance(getContext());
-        cartList = cartDb.getAllItems();
+        cartDb = CartDatabaseHelper.getInstance(getContext());
 
-        recyclerCart.setLayoutManager(new LinearLayoutManager(getContext()));
-        cartAdapter = new CartAdapter(getContext(), cartList, this::refreshCart);
+        recyclerCart.setLayoutManager(
+                new LinearLayoutManager(getContext()));
+        cartAdapter = new CartAdapter(
+                getContext(), cartList, this::refreshCart);
         recyclerCart.setAdapter(cartAdapter);
 
         refreshCart();
@@ -53,36 +57,41 @@ public class CartFragment extends Fragment {
         btnCheckout.setOnClickListener(v -> {
             if (cartList.isEmpty()) {
                 Toast.makeText(getContext(),
-                        "Your cart is empty!", Toast.LENGTH_SHORT).show();
+                        "Your cart is empty!",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
-            // Navigate to checkout
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new CheckoutFragment())
+                    .replace(R.id.fragment_container,
+                            new CheckoutFragment())
                     .addToBackStack(null)
                     .commit();
         });
+
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh when user comes back to cart tab
         refreshCart();
     }
 
     private void refreshCart() {
         cartList.clear();
         cartList.addAll(cartDb.getAllItems());
-        cartAdapter.notifyDataSetChanged();
+        if (cartAdapter != null) cartAdapter.notifyDataSetChanged();
         updateTotal();
-        tvEmptyCart.setVisibility(
-                cartList.isEmpty() ? View.VISIBLE : View.GONE);
+        if (tvEmptyCart != null) {
+            tvEmptyCart.setVisibility(
+                    cartList.isEmpty() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void updateTotal() {
-        double total = cartDb.getTotal();
-        tvTotal.setText("Rs. " + String.format("%,.0f", total));
+        if (tvTotal != null) {
+            tvTotal.setText("Rs. "
+                    + String.format("%,.0f", cartDb.getTotal()));
+        }
     }
 }
