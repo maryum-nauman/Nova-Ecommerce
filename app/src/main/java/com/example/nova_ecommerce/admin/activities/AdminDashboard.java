@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.example.nova_ecommerce.R;
 import com.example.nova_ecommerce.activities.Login;
 import com.example.nova_ecommerce.admin.fragments.AdminCategoriesFragment;
+import com.example.nova_ecommerce.admin.fragments.AdminInboxFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminOrdersFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminProductsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -88,6 +89,9 @@ public class AdminDashboard extends AppCompatActivity {
             } else if (id == R.id.admin_nav_orders) {
                 selectedFragment = new AdminOrdersFragment();
                 hideSearch();                    // ← hide for orders
+            }else if (id == R.id.admin_nav_inbox) {
+                selectedFragment = new AdminInboxFragment();
+                hideSearch();
             }
 
             if (selectedFragment != null) loadFragment(selectedFragment);

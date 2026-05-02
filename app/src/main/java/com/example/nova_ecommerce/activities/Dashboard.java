@@ -1,7 +1,6 @@
 package com.example.nova_ecommerce.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +16,7 @@ import com.example.nova_ecommerce.fragments.CategoryFragment;
 import com.example.nova_ecommerce.fragments.FavoritesFragment;
 import com.example.nova_ecommerce.fragments.ProfileFragment;
 import com.example.nova_ecommerce.fragments.ShopFragment;
+import com.example.nova_ecommerce.fragments.UserChatFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -87,6 +87,8 @@ public class Dashboard extends AppCompatActivity {
                 selectedFragment = new FavoritesFragment();
             } else if (id == R.id.nav_profile) {
                 selectedFragment = new ProfileFragment();
+            } else if (id == R.id.nav_chat) {
+                selectedFragment = new UserChatFragment();
             }
 
             if (selectedFragment != null) {
