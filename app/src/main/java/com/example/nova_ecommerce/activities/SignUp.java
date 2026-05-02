@@ -100,10 +100,21 @@ public class SignUp extends AppCompatActivity {
                 .child(uid)
                 .setValue(userMap)
                 .addOnSuccessListener(unused -> {
-                    Toast.makeText(this,
-                            "Account created! Please login.",
-                            Toast.LENGTH_SHORT).show();
-                    finish();
+                    // Send the verification email configured in your console
+                    if (mAuth.getCurrentUser() != null) {
+                        mAuth.getCurrentUser().sendEmailVerification()
+                                .addOnCompleteListener(emailTask -> {
+                                    if (emailTask.isSuccessful()) {
+                                        Toast.makeText(this,
+                                                "Verification email sent! Please check your Gmail.",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+
+                                    // CRITICAL: Sign out immediately so they can't enter yet
+                                    mAuth.signOut();
+                                    finish(); // Go back to login
+                                });
+                    }
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this,

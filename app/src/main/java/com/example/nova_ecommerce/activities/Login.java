@@ -67,7 +67,25 @@ public class Login extends AppCompatActivity {
 
             mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    checkUserRoleFromDatabase(mAuth.getCurrentUser().getUid(), selectedRoleId);
+                    com.google.firebase.auth.FirebaseUser user = mAuth.getCurrentUser();
+
+                    if (user != null) {
+                        // ─── Verification Logic ───
+                        if (selectedRoleId == R.id.rbAdmin) {
+                            // It's an Admin: Skip email verification check
+                            checkUserRoleFromDatabase(user.getUid(), selectedRoleId);
+                        } else {
+                            // It's a User: Must be verified
+                            user.reload().addOnCompleteListener(reloadTask -> {
+                                if (user.isEmailVerified()) {
+                                    checkUserRoleFromDatabase(user.getUid(), selectedRoleId);
+                                } else {
+                                    mAuth.signOut();
+                                    Toast.makeText(this, "Users must verify email first!", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
                 } else {
                     Toast.makeText(this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
