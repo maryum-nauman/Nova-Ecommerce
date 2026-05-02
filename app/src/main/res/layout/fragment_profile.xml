@@ -81,13 +81,15 @@
             android:elevation="2dp"
             android:padding="16dp">
 
-            <!-- Orders -->
+            <!-- Orders Stat -->
             <LinearLayout
+                android:id="@+id/layoutStatOrders"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground">
                 <TextView
                     android:id="@+id/tvOrderCount"
                     android:layout_width="wrap_content"
@@ -111,13 +113,15 @@
                 android:layout_gravity="center_vertical"
                 android:background="#E0E0E0"/>
 
-            <!-- Favorites -->
+            <!-- Favorites Stat -->
             <LinearLayout
+                android:id="@+id/layoutStatFavs"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground">
                 <TextView
                     android:id="@+id/tvFavCount"
                     android:layout_width="wrap_content"
@@ -141,13 +145,15 @@
                 android:layout_gravity="center_vertical"
                 android:background="#E0E0E0"/>
 
-            <!-- In Cart -->
+            <!-- In Cart Stat -->
             <LinearLayout
+                android:id="@+id/layoutStatCart"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground">
                 <TextView
                     android:id="@+id/tvCartCount"
                     android:layout_width="wrap_content"
@@ -216,7 +222,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="?attr/selectableItemBackground">
 
                     <FrameLayout
                         android:layout_width="48dp"
@@ -256,7 +263,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="?attr/selectableItemBackground">
 
                     <FrameLayout
                         android:layout_width="48dp"
@@ -296,7 +304,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="?attr/selectableItemBackground">
 
                     <FrameLayout
                         android:layout_width="48dp"

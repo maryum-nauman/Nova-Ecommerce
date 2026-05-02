@@ -1,16 +1,18 @@
 package com.example.nova_ecommerce.models;
 
+import com.google.firebase.database.PropertyName;
+
 public class CartItem {
 
     private String docId;       // SQLite row id
     private String productId;
-    private String categoryId;  // ← new
+    private String categoryId;
     private String name;
     private double price;
     private String imageUrl;
     private int    quantity;
 
-    // ── Empty constructor (needed for getAllItems()) ───────────
+    // ── Empty constructor (needed for Firebase/SQLite) ───────────
     public CartItem() {}
 
     // ── Full constructor ──────────────────────────────────────
@@ -26,10 +28,15 @@ public class CartItem {
     // ── Getters ───────────────────────────────────────────────
     public String getDocId()      { return docId; }
     public String getProductId()  { return productId; }
-    public String getCategoryId() { return categoryId; }  // ← new
+    public String getCategoryId() { return categoryId; }
     public String getName()       { return name; }
     public double getPrice()      { return price; }
+
+    @PropertyName("imageURL") // Matches Firebase key
     public String getImageUrl()   { return imageUrl; }
+    @PropertyName("imageURL") // Matches Firebase key
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
     public int    getQuantity()   { return quantity; }
 
     public String getFormattedPrice() {
@@ -39,9 +46,8 @@ public class CartItem {
     // ── Setters ───────────────────────────────────────────────
     public void setDocId(String docId)           { this.docId = docId; }
     public void setProductId(String productId)   { this.productId = productId; }
-    public void setCategoryId(String categoryId) { this.categoryId = categoryId; } // ← new
+    public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
     public void setName(String name)             { this.name = name; }
     public void setPrice(double price)           { this.price = price; }
-    public void setImageUrl(String imageUrl)     { this.imageUrl = imageUrl; }
     public void setQuantity(int quantity)        { this.quantity = quantity; }
 }
