@@ -4,9 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -16,13 +16,13 @@ import com.example.nova_ecommerce.activities.Login;
 import com.example.nova_ecommerce.admin.fragments.AdminCategoriesFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminOrdersFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminProductsFragment;
-import com.example.nova_ecommerce.fragments.ShopFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class AdminDashboard extends AppCompatActivity {
 
     private AdminCategoriesFragment categoriesFragment;
+    private EditText                etSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +41,9 @@ public class AdminDashboard extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
         // ── Search ────────────────────────────────────────────────
-        EditText etSearch = findViewById(R.id.etSearch);
+        etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s,
@@ -56,8 +57,7 @@ public class AdminDashboard extends AppCompatActivity {
                 if (current instanceof AdminCategoriesFragment) {
                     ((AdminCategoriesFragment) current)
                             .filterProducts(s.toString().trim());
-                }
-                if (current instanceof AdminProductsFragment) {
+                } else if (current instanceof AdminProductsFragment) {
                     ((AdminProductsFragment) current)
                             .filterProducts(s.toString().trim());
                 }
@@ -68,7 +68,9 @@ public class AdminDashboard extends AppCompatActivity {
         });
 
         // ── Bottom Navigation ─────────────────────────────────────
-        BottomNavigationView bottomNav = findViewById(R.id.admin_bottom_navigation);
+        BottomNavigationView bottomNav =
+                findViewById(R.id.admin_bottom_navigation);
+
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             int id = item.getItemId();
@@ -77,10 +79,15 @@ public class AdminDashboard extends AppCompatActivity {
                 if (categoriesFragment == null)
                     categoriesFragment = new AdminCategoriesFragment();
                 selectedFragment = categoriesFragment;
+                showSearch();                    // ← show for categories
+
             } else if (id == R.id.admin_nav_products) {
                 selectedFragment = new AdminProductsFragment();
+                showSearch();                    // ← show for products
+
             } else if (id == R.id.admin_nav_orders) {
                 selectedFragment = new AdminOrdersFragment();
+                hideSearch();                    // ← hide for orders
             }
 
             if (selectedFragment != null) loadFragment(selectedFragment);
@@ -91,6 +98,19 @@ public class AdminDashboard extends AppCompatActivity {
         categoriesFragment = new AdminCategoriesFragment();
         loadFragment(categoriesFragment);
         bottomNav.setSelectedItemId(R.id.admin_nav_categories);
+        showSearch(); // default tab shows search
+    }
+
+    // ── Show search bar ───────────────────────────────────────
+    private void showSearch() {
+        etSearch.setVisibility(View.VISIBLE);
+        etSearch.setText("");
+    }
+
+    // ── Hide and clear search bar ─────────────────────────────
+    private void hideSearch() {
+        etSearch.setText("");
+        etSearch.setVisibility(View.GONE);
     }
 
     private void loadFragment(Fragment fragment) {

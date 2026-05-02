@@ -6,11 +6,27 @@
     </style>
 
     <style name="Theme.NovaEcommerce" parent="Base.Theme.NovaEcommerce" />
-    <style name="MaterialAlertDialog_Nova" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Nova.Radius16</item>
-        <item name="colorPrimary">#009688</item> </style>
-
     <style name="ShapeAppearanceOverlay.Nova.Radius16" parent="">
         <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="MaterialAlertDialog_Nova" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:colorBackground">#FFFFFF</item>
+        <item name="buttonBarPositiveButtonStyle">@style/NovaDialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NovaDialogButtonOutlined</item>
+    </style>
+
+    <style name="NovaDialogButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <style name="NovaDialogButtonOutlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="strokeColor">@color/colorPrimary</item>
+        <item name="cornerRadius">8dp</item>
     </style>
 </resources>
