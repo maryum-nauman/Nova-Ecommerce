@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.nova_ecommerce.R;
+import com.example.nova_ecommerce.models.Category;
 
 import java.util.List;
 
@@ -20,41 +21,50 @@ public class CategoryAdapter extends
         RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
     public interface OnCategoryClickListener {
-        void onCategoryClick(String category);
+        void onCategoryClick(Category category);
     }
 
-    private Context context;
-    private List<String> categoryList;
-    private OnCategoryClickListener listener;
-    private String selectedCategory = "All";
+    private final Context context;
+    private final List<Category> categoryList;
+    private final OnCategoryClickListener listener;
+    private String selectedCategoryId = "All";
 
-    public CategoryAdapter(Context context, List<String> categoryList,
+    public CategoryAdapter(Context context, List<Category> categoryList,
                            OnCategoryClickListener listener) {
         this.context      = context;
         this.categoryList = categoryList;
         this.listener     = listener;
     }
 
-    public void setSelected(String category) {
-        this.selectedCategory = category;
+    public void setSelected(String categoryId) {
+        this.selectedCategoryId = categoryId;
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+                                                 int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_category, parent, false);
         return new CategoryViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
-        String category = categoryList.get(position);
-        holder.tvCategoryName.setText(category);
+    public void onBindViewHolder(@NonNull CategoryViewHolder holder,
+                                 int position) {
+        Category category = categoryList.get(position);
+        holder.tvCategoryName.setText(category.getName());
 
-        // Highlight selected category with teal background
-        boolean isSelected = category.equals(selectedCategory);
+        // Load category image
+        Glide.with(context)
+                .load(category.getImageURL())
+                .centerCrop()
+                .placeholder(R.color.colorPrimary)
+                .into(holder.imgCategory);
+
+        // Highlight selected
+        boolean isSelected = category.getId().equals(selectedCategoryId);
         holder.cardCategory.setCardBackgroundColor(
                 isSelected
                         ? context.getColor(R.color.colorPrimary)
@@ -62,7 +72,7 @@ public class CategoryAdapter extends
         );
 
         holder.cardCategory.setOnClickListener(v -> {
-            selectedCategory = category;
+            selectedCategoryId = category.getId();
             notifyDataSetChanged();
             listener.onCategoryClick(category);
         });

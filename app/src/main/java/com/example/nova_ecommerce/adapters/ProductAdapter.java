@@ -33,7 +33,6 @@ import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
 
-    // ── Click listener interface ──────────────────────────────
     public interface OnProductClickListener {
         void onProductClick(Product product);
     }
@@ -69,17 +68,15 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ProductViewHolder holder,
-                                 int position) {
+    public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
 
-        // ── Basic info ────────────────────────────────────────
         holder.tvProductName.setText(product.getName());
         holder.tvPrice.setText(product.getFormattedPrice());
         holder.tvRating.setText(product.getRating()
                 + " (" + product.getReviewCount() + ")");
 
-        // ── Image ─────────────────────────────────────────────
+        // Image
         holder.imgLoadingBg.setVisibility(View.VISIBLE);
         Glide.with(context)
                 .load(product.getImageURL())
@@ -87,36 +84,33 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 .override(400, 300)
                 .listener(new RequestListener<Drawable>() {
                     @Override
-                    public boolean onLoadFailed(
-                            @Nullable GlideException e,
-                            Object model,
-                            Target<Drawable> target,
-                            boolean isFirstResource) {
-                        Log.e("GLIDE_ERROR",
-                                "Failed: " + product.getImageURL());
+                    public boolean onLoadFailed(@Nullable GlideException e,
+                                                Object model,
+                                                Target<Drawable> target,
+                                                boolean isFirstResource) {
                         holder.imgLoadingBg.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(
-                            Drawable resource,
-                            Object model,
-                            Target<Drawable> target,
-                            DataSource dataSource,
-                            boolean isFirstResource) {
+                    public boolean onResourceReady(Drawable resource,
+                                                   Object model,
+                                                   Target<Drawable> target,
+                                                   DataSource dataSource,
+                                                   boolean isFirstResource) {
                         holder.imgLoadingBg.setVisibility(View.GONE);
                         return false;
                     }
                 })
                 .into(holder.imgProduct);
 
+        // Favorite icon
         holder.btnFavorite.setImageResource(
                 product.isFavorite()
                         ? R.drawable.ic_favorite
                         : R.drawable.ic_favorite_border);
 
-        // ── Favorite toggle ───────────────────────────────────
+        // Favorite toggle
         holder.btnFavorite.setOnClickListener(v -> {
             boolean nowFav = !product.isFavorite();
             product.setFavorite(nowFav);
@@ -146,7 +140,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             }
         });
 
-        // ── Add to cart ───────────────────────────────────────
+        // Add to cart
         holder.btnAddToCart.setOnClickListener(v -> {
             CartItem item = new CartItem(
                     product.getId(),
@@ -161,7 +155,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     Toast.LENGTH_SHORT).show();
         });
 
-        // ── Open product detail on card click ─────────────────
+        // Card click → detail
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onProductClick(product);
         });
@@ -170,7 +164,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @Override
     public int getItemCount() { return productList.size(); }
 
-    // ── Search filter ─────────────────────────────────────────
+    // Filter by name, categoryName, or description
     public void filter(String query, List<Product> fullList) {
         productList.clear();
         if (query.isEmpty()) {
@@ -180,8 +174,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             for (Product p : fullList) {
                 if ((p.getName() != null
                         && p.getName().toLowerCase().contains(lower))
-                        || (p.getCategory() != null
-                        && p.getCategory().toLowerCase().contains(lower))
+                        || (p.getCategoryName() != null          // ← categoryName now
+                        && p.getCategoryName().toLowerCase().contains(lower))
                         || (p.getDescription() != null
                         && p.getDescription().toLowerCase().contains(lower))) {
                     productList.add(p);
@@ -191,7 +185,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         notifyDataSetChanged();
     }
 
-    // ── ViewHolder ────────────────────────────────────────────
     static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView   imgProduct;
         View        imgLoadingBg;
