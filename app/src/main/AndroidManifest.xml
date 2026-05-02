@@ -30,6 +30,9 @@
             android:name=".activities.Dashboard"
             android:exported="false" />
         <activity
+            android:name=".admin.activities.AdminDashboard"
+            android:exported="false" />
+        <activity
             android:name=".activities.Splash"
             android:exported="true">
             <intent-filter>
