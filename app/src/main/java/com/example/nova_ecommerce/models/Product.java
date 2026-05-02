@@ -18,21 +18,26 @@ public class Product {
     public Product() {}
 
     // ── Getters ───────────────────────────────────────────────
+    @Exclude
     public String getId()           { return id; }
     public String getName()         { return name; }
     public String getDescription()  { return description; }
     public double getPrice()        { return price; }
     public String getImageURL()     { return imageURL; }
+    @Exclude
     public String getCategoryId()   { return categoryId; }
+    @Exclude
     public String getCategoryName() { return categoryName; }
     @PropertyName("isFeatured")
     public boolean isFeatured()     { return isFeatured; }
     public double getRating()       { return rating; }
     public int getReviewCount()     { return reviewCount; }
     public int getStock()           { return stock; }
+    @Exclude
     public boolean isFavorite()     { return isFavorite; }
 
     // Legacy getter so old code calling getCategory() still compiles
+    @Exclude
     public String getCategory()     { return categoryName; }
 
     public String getFormattedPrice() {
@@ -40,17 +45,23 @@ public class Product {
     }
 
     // ── Setters ───────────────────────────────────────────────
-    public void setId(String id)                   { this.id = id; }
-    public void setName(String name)               { this.name = name; }
-    public void setDescription(String description) { this.description = description; }
-    public void setPrice(double price)             { this.price = price; }
-    public void setImageURL(String imageURL)       { this.imageURL = imageURL; }
-    public void setCategoryId(String categoryId)   { this.categoryId = categoryId; }
-    public void setCategoryName(String categoryName){ this.categoryName = categoryName; }
+    @Exclude
+    public void setId(String id)                    { this.id = id; }
+    public void setName(String name)                { this.name = name; }
+    public void setDescription(String d)            { this.description = d; }
+    public void setPrice(double price)              { this.price = price; }
+    public void setImageURL(String imageURL)        { this.imageURL = imageURL; }
+    @Exclude
+    public void setCategoryId(String categoryId)    { this.categoryId = categoryId; }
+
+    @Exclude
+    public void setCategoryName(String n)           { this.categoryName = n; }
+
     @PropertyName("isFeatured")
     public void setFeatured(boolean featured)      { isFeatured = featured; }
     public void setRating(double rating)           { this.rating = rating; }
     public void setReviewCount(int reviewCount)    { this.reviewCount = reviewCount; }
     public void setStock(int stock)                { this.stock = stock; }
-    public void setFavorite(boolean favorite)      { isFavorite = favorite; }
+    @Exclude
+    public void setFavorite(boolean favorite)       { isFavorite = favorite; }
 }

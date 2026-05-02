@@ -244,6 +244,16 @@ public class ProductDetailFragment extends Fragment {
                     .child(currentProduct.getId());
 
             if (nowFav) {
+                Map<String, Object> favData = new HashMap<>();
+                favData.put("name",         currentProduct.getName());
+                favData.put("price",        currentProduct.getPrice());
+                favData.put("imageURL",     currentProduct.getImageURL());
+                favData.put("description",  currentProduct.getDescription());
+                favData.put("rating",       currentProduct.getRating());
+                favData.put("reviewCount",  currentProduct.getReviewCount());
+                favData.put("stock",        currentProduct.getStock());
+                favData.put("categoryId",   currentProduct.getCategoryId());    // ← critical
+                favData.put("categoryName", currentProduct.getCategoryName());
                 favRef.setValue(currentProduct);
                 Toast.makeText(getContext(),
                         "Added to favorites!", Toast.LENGTH_SHORT).show();
