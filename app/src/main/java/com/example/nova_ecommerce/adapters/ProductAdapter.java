@@ -149,7 +149,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     product.getImageURL(),
                     1
             );
-            cartDb.addOrIncrement(item);
+            item.setCategoryId(product.getCategoryId());
+            cartDb.addOrIncrement(item,userId);
             Toast.makeText(context,
                     product.getName() + " added to cart!",
                     Toast.LENGTH_SHORT).show();

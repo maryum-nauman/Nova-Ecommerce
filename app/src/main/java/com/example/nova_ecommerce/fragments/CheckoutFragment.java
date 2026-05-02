@@ -108,8 +108,10 @@ public class CheckoutFragment extends Fragment {
     }
 
     private void loadOrderSummary() {
-        List<CartItem> items = cartDb.getAllItems();
-        double total = cartDb.getTotal();
+        if (userId == null) return;
+
+        List<CartItem> items = cartDb.getAllItems(userId);
+        double total = cartDb.getTotal(userId);
         tvItemCount.setText(items.size() + " item(s) in cart");
         tvOrderTotal.setText("Rs. " + String.format("%,.0f", total));
     }
@@ -176,6 +178,12 @@ public class CheckoutFragment extends Fragment {
                             String address, String city, String postalCode,
                             String paymentMethod) {
 
+        if (userId == null) {
+            Toast.makeText(getContext(),
+                    "Please login first",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (userOrdersRef == null) {
             Toast.makeText(getContext(),
                     "Please log in to place an order",
@@ -186,8 +194,8 @@ public class CheckoutFragment extends Fragment {
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Placing Order...");
 
-        List<CartItem> cartItems = cartDb.getAllItems();
-        double total = cartDb.getTotal();
+        List<CartItem> cartItems = cartDb.getAllItems(userId);
+        double total = cartDb.getTotal(userId);
 
         // Build items list — now includes categoryId
         List<Map<String, Object>> itemsList = new ArrayList<>();
@@ -225,7 +233,7 @@ public class CheckoutFragment extends Fragment {
         String orderId = userOrdersRef.push().getKey();
         userOrdersRef.child(orderId).setValue(order)
                 .addOnSuccessListener(unused -> {
-                    cartDb.clearCart();
+                    cartDb.clearCart(userId);
                     getParentFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container,
                                     OrderSuccessFragment.newInstance(

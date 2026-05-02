@@ -262,7 +262,7 @@ public class ProductDetailFragment extends Fragment {
                     currentProduct.getPrice(),
                     currentProduct.getImageURL(), 1);
             item.setCategoryId(currentProduct.getCategoryId());
-            cartDb.addOrIncrement(item);
+            cartDb.addOrIncrement(item,userId);
             Toast.makeText(getContext(),
                     "Added to cart!", Toast.LENGTH_SHORT).show();
         });
@@ -275,7 +275,7 @@ public class ProductDetailFragment extends Fragment {
                     currentProduct.getPrice(),
                     currentProduct.getImageURL(), 1);
             item.setCategoryId(currentProduct.getCategoryId());
-            cartDb.addOrIncrement(item);
+            cartDb.addOrIncrement(item,userId);
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container,
                             new CheckoutFragment())

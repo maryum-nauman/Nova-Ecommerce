@@ -109,7 +109,7 @@ public class DealAdapter extends
                     product.getPrice(),
                     product.getImageURL(), 1);
             item.setCategoryId(product.getCategoryId());
-            cartDb.addOrIncrement(item);
+            cartDb.addOrIncrement(item,userId);
             Toast.makeText(context,
                     product.getName() + " added to cart!",
                     Toast.LENGTH_SHORT).show();
