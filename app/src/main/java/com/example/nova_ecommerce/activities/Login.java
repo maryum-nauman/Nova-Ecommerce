@@ -3,12 +3,9 @@ package com.example.nova_ecommerce.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.nova_ecommerce.R;
 import com.example.nova_ecommerce.admin.activities.AdminDashboard;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,91 +23,214 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class Login extends AppCompatActivity {
-    private EditText etEmail, etPassword;
-    private CheckBox cbRememberMe;
-    private RadioGroup rgRole;
-    private FirebaseAuth mAuth;
+
+    private EditText         etEmail, etPassword;
+    private CheckBox         cbRememberMe;
+    private TextView         tvRoleUser, tvRoleAdmin;
+    private FirebaseAuth     mAuth;
     private SharedPreferences sharedPreferences;
 
-    private static final String PREF_NAME = "NovaPrefs";
+    // Track which role card is selected
+    private String selectedRole = "user"; // default
+
+    private static final String PREF_NAME    = "NovaPrefs";
     private static final String KEY_REMEMBER = "isRemembered";
-    private static final String KEY_ROLE = "userRole";
+    private static final String KEY_ROLE     = "userRole";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
+        mAuth             = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
 
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
+        etEmail      = findViewById(R.id.etEmail);
+        etPassword   = findViewById(R.id.etPassword);
         cbRememberMe = findViewById(R.id.cbRememberMe);
-        rgRole = findViewById(R.id.rgRole);
-        Button btnLogin = findViewById(R.id.btnLogin);
-        TextView tvSignUp = findViewById(R.id.tvGoToSignUp);
+        tvRoleUser   = findViewById(R.id.tvRoleUser);
+        tvRoleAdmin  = findViewById(R.id.tvRoleAdmin);
+        Button   btnLogin    = findViewById(R.id.btnLogin);
+        TextView tvSignUp    = findViewById(R.id.tvGoToSignUp);
+        TextView tvForgotPass = findViewById(R.id.tvForgotPass);
 
-        // Auto-login logic
-        if (mAuth.getCurrentUser() != null && sharedPreferences.getBoolean(KEY_REMEMBER, false)) {
-            redirectBasedOnRole(sharedPreferences.getString(KEY_ROLE, "user"));
+        // Auto-login
+        if (mAuth.getCurrentUser() != null
+                && sharedPreferences.getBoolean(KEY_REMEMBER, false)) {
+            redirectBasedOnRole(
+                    sharedPreferences.getString(KEY_ROLE, "user"));
+            return;
         }
 
+        // ── Role toggle cards ─────────────────────────────────
+        selectRole("user"); // default highlighted
+
+        tvRoleUser.setOnClickListener(v  -> selectRole("user"));
+        tvRoleAdmin.setOnClickListener(v -> selectRole("admin"));
+
+        // ── Forgot password ───────────────────────────────────
+        tvForgotPass.setOnClickListener(v -> showForgotPasswordDialog());
+
+        // ── Login ─────────────────────────────────────────────
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
-            String pass = etPassword.getText().toString().trim();
-            int selectedRoleId = rgRole.getCheckedRadioButtonId();
+            String pass  = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Please fill all fields",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    com.google.firebase.auth.FirebaseUser user = mAuth.getCurrentUser();
+            mAuth.signInWithEmailAndPassword(email, pass)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            com.google.firebase.auth.FirebaseUser user =
+                                    mAuth.getCurrentUser();
+                            if (user == null) return;
 
-                    if (user != null) {
-                        // ─── Verification Logic ───
-                        if (selectedRoleId == R.id.rbAdmin) {
-                            // It's an Admin: Skip email verification check
-                            checkUserRoleFromDatabase(user.getUid(), selectedRoleId);
+                            if ("admin".equals(selectedRole)) {
+                                // Admin: skip email verification
+                                checkUserRoleFromDatabase(
+                                        user.getUid());
+                            } else {
+                                // User: must verify email
+                                user.reload().addOnCompleteListener(
+                                        reload -> {
+                                            if (user.isEmailVerified()) {
+                                                checkUserRoleFromDatabase(
+                                                        user.getUid());
+                                            } else {
+                                                mAuth.signOut();
+                                                Toast.makeText(this,
+                                                        "Please verify your email first!",
+                                                        Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                            }
                         } else {
-                            // It's a User: Must be verified
-                            user.reload().addOnCompleteListener(reloadTask -> {
-                                if (user.isEmailVerified()) {
-                                    checkUserRoleFromDatabase(user.getUid(), selectedRoleId);
-                                } else {
-                                    mAuth.signOut();
-                                    Toast.makeText(this, "Users must verify email first!", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                            Toast.makeText(this,
+                                    "Login failed: "
+                                            + task.getException()
+                                            .getMessage(),
+                                    Toast.LENGTH_SHORT).show();
                         }
-                    }
-                } else {
-                    Toast.makeText(this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                    });
         });
 
-        tvSignUp.setOnClickListener(v -> startActivity(new Intent(Login.this, SignUp.class)));
+        tvSignUp.setOnClickListener(v ->
+                startActivity(new Intent(Login.this, SignUp.class)));
     }
 
-    private void checkUserRoleFromDatabase(String uid, int selectedRoleId) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(uid);
+    // ── Highlight selected role card ──────────────────────────
+    private void selectRole(String role) {
+        selectedRole = role;
+
+        if ("user".equals(role)) {
+            // User card — active
+            tvRoleUser.setBackgroundResource(
+                    R.drawable.role_card_selected);
+            tvRoleUser.setTextColor(
+                    getColor(R.color.colorPrimary));
+
+            // Admin card — inactive
+            tvRoleAdmin.setBackgroundResource(
+                    R.drawable.role_card_unselected);
+            tvRoleAdmin.setTextColor(
+                    getResources().getColor(
+                            android.R.color.darker_gray, null));
+        } else {
+            // Admin card — active
+            tvRoleAdmin.setBackgroundResource(
+                    R.drawable.role_card_selected);
+            tvRoleAdmin.setTextColor(
+                    getColor(R.color.colorPrimary));
+
+            // User card — inactive
+            tvRoleUser.setBackgroundResource(
+                    R.drawable.role_card_unselected);
+            tvRoleUser.setTextColor(
+                    getResources().getColor(
+                            android.R.color.darker_gray, null));
+        }
+    }
+
+    // ── Forgot password dialog ────────────────────────────────
+    private void showForgotPasswordDialog() {
+        android.view.View dialogView = getLayoutInflater()
+                .inflate(R.layout.dialog_forgot_password, null);
+        EditText etResetEmail = dialogView.findViewById(
+                R.id.etResetEmail);
+
+        // Pre-fill if user already typed email
+        String currentEmail = etEmail.getText().toString().trim();
+        if (!currentEmail.isEmpty()) {
+            etResetEmail.setText(currentEmail);
+        }
+
+        new MaterialAlertDialogBuilder(this,
+                R.style.MaterialAlertDialog_Nova)
+                .setTitle("Reset Password")
+                .setIcon(android.R.drawable.ic_lock_idle_lock)
+                .setView(dialogView)
+                .setPositiveButton("Send Reset Link", (dialog, which) -> {
+                    String resetEmail = etResetEmail.getText()
+                            .toString().trim();
+
+                    if (resetEmail.isEmpty()
+                            || !resetEmail.contains("@")) {
+                        Toast.makeText(this,
+                                "Please enter a valid email",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    sendPasswordResetEmail(resetEmail);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // ── Send Firebase password reset email ────────────────────
+    private void sendPasswordResetEmail(String email) {
+        mAuth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(unused ->
+                        new MaterialAlertDialogBuilder(this,
+                                R.style.MaterialAlertDialog_Nova)
+                                .setTitle("Email Sent ✅")
+                                .setMessage(
+                                        "A password reset link has been sent to:\n\n"
+                                                + email
+                                                + "\n\nCheck your inbox and follow the link to reset your password.")
+                                .setPositiveButton("OK", null)
+                                .show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show());
+    }
+
+    // ── Check role in DB matches selected role ────────────────
+    private void checkUserRoleFromDatabase(String uid) {
+        DatabaseReference ref = FirebaseDatabase.getInstance(
+                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+        ).getReference("users").child(uid);
+
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    String roleInDb = snapshot.child("role").getValue(String.class);
+                    String roleInDb = snapshot.child("role")
+                            .getValue(String.class);
 
-                    if (selectedRoleId == R.id.rbAdmin && "admin".equals(roleInDb)) {
-                        handleLoginSuccess("admin");
-                    } else if (selectedRoleId == R.id.rbUser && "user".equals(roleInDb)) {
-                        handleLoginSuccess("user");
+                    if (selectedRole.equals(roleInDb)) {
+                        handleLoginSuccess(roleInDb);
                     } else {
                         mAuth.signOut();
-                        Toast.makeText(Login.this, "Access Denied: Incorrect Role Selected", Toast.LENGTH_LONG).show();
+                        Toast.makeText(Login.this,
+                                "Access Denied: Incorrect role selected",
+                                Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -128,10 +249,12 @@ public class Login extends AppCompatActivity {
     }
 
     private void redirectBasedOnRole(String role) {
-        if ("admin".equals(role)) {
-            startActivity(new Intent(Login.this, AdminDashboard.class));
-        } else {
-            startActivity(new Intent(Login.this, Dashboard.class));
-        }
+        Intent intent = "admin".equals(role)
+                ? new Intent(Login.this, AdminDashboard.class)
+                : new Intent(Login.this, Dashboard.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }
