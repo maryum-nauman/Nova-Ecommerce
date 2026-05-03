@@ -31,10 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UserChatFragment extends Fragment {
-
-    // ── Default admin UID — replace or make dynamic if multiple admins
-    private static final String ADMIN_UID  =
-            "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
+    private static final String ADMIN_UID  = "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
     private static final String ADMIN_NAME = "Nova Support";
 
     private RecyclerView       recyclerChat;
@@ -45,19 +42,16 @@ public class UserChatFragment extends Fragment {
 
     private final List<ChatMessage> messageList = new ArrayList<>();
 
-    private DatabaseReference chatRef;    // chats/{userId}_{adminId}
+    private DatabaseReference chatRef;
     private String            userId;
     private String            userName;
     private String            userEmail;
-    private String            chatKey;   // "{userId}_{adminId}"
+    private String            chatKey;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_user_chat, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_user_chat, container, false);
 
         recyclerChat = view.findViewById(R.id.recyclerChat);
         etMessage    = view.findViewById(R.id.etChatMessage);
@@ -65,14 +59,12 @@ public class UserChatFragment extends Fragment {
         tvEmpty      = view.findViewById(R.id.tvChatEmpty);
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Toast.makeText(getContext(),
-                    "Please log in to chat",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Please log in to chat", Toast.LENGTH_SHORT).show();
             return view;
         }
 
         userId  = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        chatKey = userId + "_" + ADMIN_UID; // unique per user-admin pair
+        chatKey = userId + "_" + ADMIN_UID;
 
         chatRef = FirebaseDatabase.getInstance(
                 "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
@@ -84,33 +76,26 @@ public class UserChatFragment extends Fragment {
         llm.setStackFromEnd(true);
         recyclerChat.setLayoutManager(llm);
         adapter = new ChatMessageAdapter(
-                getContext(), messageList, false); // false = user view
+                getContext(), messageList, false);
         recyclerChat.setAdapter(adapter);
 
-        // Load user info then initialise chat
         loadUserInfo();
 
         btnSend.setOnClickListener(v -> sendMessage());
         return view;
     }
 
-    // ── Fetch name + email from users table ───────────────────
     private void loadUserInfo() {
-        FirebaseDatabase.getInstance(
-                        "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-                ).getReference("users").child(userId)
+        FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("users").child(userId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snap) {
-                        userName  = snap.child("name")
-                                .getValue(String.class);
-                        userEmail = snap.child("email")
-                                .getValue(String.class);
+                        userName  = snap.child("name").getValue(String.class);
+                        userEmail = snap.child("email").getValue(String.class);
 
                         if (userName  == null) userName  = "User";
                         if (userEmail == null) userEmail = "";
 
-                        // Ensure chat metadata exists in DB
                         initChatMetadata();
                         loadMessages();
                         resetUnreadUser();
@@ -126,14 +111,11 @@ public class UserChatFragment extends Fragment {
                 });
     }
 
-    // ── Write chat node metadata once on first open ───────────
     private void initChatMetadata() {
-        // Only write if node doesn't exist yet
         chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
                 if (!snap.hasChild("userId")) {
-                    // First time — create metadata
                     Map<String, Object> meta = new HashMap<>();
                     meta.put("userId",     userId);
                     meta.put("adminId",    ADMIN_UID);
@@ -153,45 +135,34 @@ public class UserChatFragment extends Fragment {
         });
     }
 
-    // ── Load messages ─────────────────────────────────────────
     private void loadMessages() {
         chatRef.child("messages")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onDataChange(
-                            @NonNull DataSnapshot snapshot) {
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
                         messageList.clear();
-                        for (DataSnapshot child
-                                : snapshot.getChildren()) {
-                            ChatMessage msg =
-                                    child.getValue(ChatMessage.class);
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            ChatMessage msg = child.getValue(ChatMessage.class);
                             if (msg != null) {
                                 msg.setMessageId(child.getKey());
                                 messageList.add(msg);
                             }
                         }
-
-                        // ── Sort oldest → newest before displaying ─
                         adapter.sortByTimestamp();
 
                         adapter.notifyDataSetChanged();
                         if (!messageList.isEmpty()) {
-                            recyclerChat.scrollToPosition(
-                                    messageList.size() - 1);
+                            recyclerChat.scrollToPosition(messageList.size() - 1);
                         }
-                        tvEmpty.setVisibility(
-                                messageList.isEmpty()
-                                        ? View.VISIBLE : View.GONE);
+                        tvEmpty.setVisibility(messageList.isEmpty() ? View.VISIBLE : View.GONE);
                         resetUnreadUser();
                     }
 
                     @Override
-                    public void onCancelled(
-                            @NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
 
-    // ── Send message ──────────────────────────────────────────
     private void sendMessage() {
         String text = etMessage.getText().toString().trim();
         if (text.isEmpty()) return;
@@ -199,7 +170,6 @@ public class UserChatFragment extends Fragment {
         String msgId = chatRef.child("messages").push().getKey();
         long   now   = System.currentTimeMillis();
 
-        // Message node
         Map<String, Object> msgMap = new HashMap<>();
         msgMap.put("senderId",   userId);
         msgMap.put("senderName", userName);
@@ -209,34 +179,26 @@ public class UserChatFragment extends Fragment {
 
         chatRef.child("messages").child(msgId).setValue(msgMap);
 
-        // Update last message preview
         Map<String, Object> meta = new HashMap<>();
         meta.put("lastMessage",   text);
         meta.put("lastTimestamp", now);
         chatRef.updateChildren(meta);
 
-        // Increment admin's unread count
         chatRef.child("unreadAdmin")
-                .addListenerForSingleValueEvent(
-                        new ValueEventListener() {
+                .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
-                            public void onDataChange(
-                                    @NonNull DataSnapshot s) {
-                                long cur = s.getValue(Long.class) != null
-                                        ? s.getValue(Long.class) : 0;
-                                chatRef.child("unreadAdmin")
-                                        .setValue(cur + 1);
+                            public void onDataChange(@NonNull DataSnapshot s) {
+                                long cur = s.getValue(Long.class) != null ? s.getValue(Long.class) : 0;
+                                chatRef.child("unreadAdmin").setValue(cur + 1);
                             }
 
                             @Override
-                            public void onCancelled(
-                                    @NonNull DatabaseError e) {}
+                            public void onCancelled(@NonNull DatabaseError e) {}
                         });
 
         etMessage.setText("");
     }
 
-    // ── Reset user's unread to 0 when they open the chat ─────
     private void resetUnreadUser() {
         if (chatRef != null) {
             chatRef.child("unreadUser").setValue(0);

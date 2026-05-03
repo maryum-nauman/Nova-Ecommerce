@@ -17,8 +17,7 @@ import com.example.nova_ecommerce.models.Category;
 
 import java.util.List;
 
-public class AdminCategoryAdapter extends
-        RecyclerView.Adapter<AdminCategoryAdapter.ViewHolder> {
+public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.ViewHolder> {
 
     public interface OnEditClickListener   {
         void onEdit(Category category);
@@ -32,10 +31,7 @@ public class AdminCategoryAdapter extends
     private final OnEditClickListener   onEdit;
     private final OnDeleteClickListener onDelete;
 
-    public AdminCategoryAdapter(Context context,
-                                List<Category> list,
-                                OnEditClickListener onEdit,
-                                OnDeleteClickListener onDelete) {
+    public AdminCategoryAdapter(Context context, List<Category> list, OnEditClickListener onEdit, OnDeleteClickListener onDelete) {
         this.context  = context;
         this.list     = list;
         this.onEdit   = onEdit;
@@ -44,8 +40,7 @@ public class AdminCategoryAdapter extends
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
-                                         int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_admin_category, parent, false);
         return new ViewHolder(view);

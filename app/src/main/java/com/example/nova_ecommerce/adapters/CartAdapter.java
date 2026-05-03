@@ -21,7 +21,6 @@ import java.util.List;
 public class CartAdapter extends
         RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
-    // ── New click interface ───────────────────────────────────
     public interface OnItemClickListener {
         void onItemClick(CartItem item);
     }
@@ -41,7 +40,6 @@ public class CartAdapter extends
         this.onCartChanged = onCartChanged;
     }
 
-    // ── Set from CartFragment ─────────────────────────────────
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.itemClickListener = listener;
     }
@@ -69,7 +67,6 @@ public class CartAdapter extends
                 .placeholder(R.color.colorPrimary)
                 .into(holder.imgCartItem);
 
-        // ── Card click → product detail ───────────────────────
         holder.itemView.setOnClickListener(v -> {
             if (itemClickListener != null) {
                 itemClickListener.onItemClick(item);

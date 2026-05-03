@@ -22,7 +22,6 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Dashboard extends AppCompatActivity {
 
-    // Keep ONE instance of ShopFragment so fullList is never lost
     private ShopFragment shopFragment;
 
     @Override
@@ -30,7 +29,7 @@ public class Dashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // ── Logout ────────────────────────────────────────────────
+
         ImageButton btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
@@ -43,7 +42,6 @@ public class Dashboard extends AppCompatActivity {
             finish();
         });
 
-        // ── Search ────────────────────────────────────────────────
         EditText etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -66,17 +64,14 @@ public class Dashboard extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // ── Bottom Navigation ─────────────────────────────────────
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
-            // Clear search bar when switching tabs
             etSearch.setText("");
 
             Fragment selectedFragment = null;
             int id = item.getItemId();
 
             if (id == R.id.nav_shop) {
-                // Always reuse same ShopFragment instance
                 if (shopFragment == null) shopFragment = new ShopFragment();
                 selectedFragment = shopFragment;
             } else if (id == R.id.nav_category) {
@@ -97,7 +92,6 @@ public class Dashboard extends AppCompatActivity {
             return true;
         });
 
-        // ── Default: open Shop tab ────────────────────────────────
         shopFragment = new ShopFragment();
         loadFragment(shopFragment);
         bottomNav.setSelectedItemId(R.id.nav_shop);

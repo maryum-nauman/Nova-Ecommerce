@@ -66,54 +66,38 @@ public class CheckoutFragment extends Fragment {
     private List<CartItem>     cartItems;
     private boolean            summaryExpanded = false;
 
-    // Pending order fields — stored while waiting for OTP
-    private String pendingFullName, pendingPhone, pendingEmail,
-            pendingAddress, pendingCity, pendingPostalCode,
-            pendingPaymentMethod, pendingOtp;
+    private String pendingFullName, pendingPhone, pendingEmail, pendingAddress, pendingCity, pendingPostalCode, pendingPaymentMethod, pendingOtp;
 
-    private static final String DB_URL =
-            "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com";
+    private static final String DB_URL = "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com";
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_checkout, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_checkout, container, false);
 
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            userId    = FirebaseAuth.getInstance()
-                    .getCurrentUser().getUid();
-            userEmail = FirebaseAuth.getInstance()
-                    .getCurrentUser().getEmail();
-            userOrdersRef = FirebaseDatabase.getInstance(DB_URL)
-                    .getReference("users").child(userId).child("orders");
+            userId    = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+            userOrdersRef = FirebaseDatabase.getInstance(DB_URL).getReference("users").child(userId).child("orders");
         }
 
         cartDb = CartDatabaseHelper.getInstance(getContext());
-
-        // Fetch user name for OTP email
         if (userId != null) {
-            FirebaseDatabase.getInstance(DB_URL)
-                    .getReference("users").child(userId).child("name")
+            FirebaseDatabase.getInstance(DB_URL).getReference("users").child(userId).child("name")
                     .addListenerForSingleValueEvent(
                             new ValueEventListener() {
                                 @Override
-                                public void onDataChange(
-                                        @NonNull DataSnapshot s) {
+                                public void onDataChange(@NonNull DataSnapshot s) {
                                     userName = s.getValue(String.class);
                                     if (userName == null) userName = "Customer";
                                 }
                                 @Override
-                                public void onCancelled(
-                                        @NonNull DatabaseError e) {
+                                public void onCancelled(@NonNull DatabaseError e) {
                                     userName = "Customer";
                                 }
                             });
         }
 
-        // ── Bind views ────────────────────────────────────────
         etFullName       = view.findViewById(R.id.etFullName);
         etPhone          = view.findViewById(R.id.etPhone);
         etEmail          = view.findViewById(R.id.etEmail);
@@ -136,14 +120,9 @@ public class CheckoutFragment extends Fragment {
         etCardCVV        = view.findViewById(R.id.etCardCVV);
 
         if (userEmail != null) etEmail.setText(userEmail);
-
         rgPayment.setOnCheckedChangeListener((group, checkedId) ->
-                cardFieldsLayout.setVisibility(
-                        checkedId == R.id.rbCreditCard
-                                ? View.VISIBLE : View.GONE));
-
-        view.findViewById(R.id.layoutSummaryHeader)
-                .setOnClickListener(v -> toggleSummary());
+                cardFieldsLayout.setVisibility(checkedId == R.id.rbCreditCard ? View.VISIBLE : View.GONE));
+        view.findViewById(R.id.layoutSummaryHeader).setOnClickListener(v -> toggleSummary());
 
         loadOrderSummary();
         btnPlaceOrder.setOnClickListener(v -> validateAndPlaceOrder());
@@ -152,8 +131,7 @@ public class CheckoutFragment extends Fragment {
 
     private void toggleSummary() {
         summaryExpanded = !summaryExpanded;
-        layoutOrderSummary.setVisibility(
-                summaryExpanded ? View.VISIBLE : View.GONE);
+        layoutOrderSummary.setVisibility(summaryExpanded ? View.VISIBLE : View.GONE);
         tvSummaryArrow.setText(summaryExpanded ? "▲" : "▼");
     }
 
@@ -163,10 +141,8 @@ public class CheckoutFragment extends Fragment {
         double total = cartDb.getTotal(userId);
         tvItemCount.setText(cartItems.size() + " item(s)");
         tvOrderTotal.setText("Rs. " + String.format("%,.0f", total));
-        rvOrderItems.setLayoutManager(
-                new LinearLayoutManager(getContext()));
-        rvOrderItems.setAdapter(
-                new CheckoutItemAdapter(getContext(), cartItems));
+        rvOrderItems.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvOrderItems.setAdapter(new CheckoutItemAdapter(getContext(), cartItems));
         rvOrderItems.setNestedScrollingEnabled(false);
     }
 
@@ -199,7 +175,6 @@ public class CheckoutFragment extends Fragment {
             etCity.requestFocus(); return;
         }
 
-        // Store pending order data
         pendingFullName    = fullName;
         pendingPhone       = phone;
         pendingEmail       = email;
@@ -232,55 +207,37 @@ public class CheckoutFragment extends Fragment {
             sendOtpAndShowDialog();
 
         } else {
-            // Cash on delivery — no OTP needed
             placeOrder("Cash on Delivery");
         }
     }
 
-    // ── Generate OTP, send email, show verification dialog ────
     private void sendOtpAndShowDialog() {
-        // Show sending progress
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Sending OTP...");
-
-        // Generate and save OTP to Firebase
         pendingOtp = OtpManager.generateAndSave(userId);
-
-        // Send email
-        OtpManager.sendOtpEmail(
-                userEmail,
-                userName != null ? userName : "Customer",
-                pendingOtp,
+        OtpManager.sendOtpEmail(userEmail, userName != null ? userName : "Customer", pendingOtp,
                 new OtpManager.OtpEmailCallback() {
                     @Override
                     public void onSuccess() {
-                        new Handler(Looper.getMainLooper()).post(() -> {
-                            btnPlaceOrder.setEnabled(true);
+                        new Handler(Looper.getMainLooper()).post(() -> {btnPlaceOrder.setEnabled(true);
                             btnPlaceOrder.setText("Place Order");
                             showOtpDialog();
                         });
                     }
-
                     @Override
                     public void onFailure(String error) {
                         new Handler(Looper.getMainLooper()).post(() -> {
                             btnPlaceOrder.setEnabled(true);
                             btnPlaceOrder.setText("Place Order");
-                            // Still show dialog — OTP is in Firebase
-                            // even if email failed
-                            Toast.makeText(getContext(),
-                                    "Email error, but you can still verify",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Email error, but you can still verify", Toast.LENGTH_SHORT).show();
                             showOtpDialog();
                         });
                     }
                 });
     }
 
-    // ── OTP entry dialog ──────────────────────────────────────
     private void showOtpDialog() {
-        View dialogView = LayoutInflater.from(getContext())
-                .inflate(R.layout.dialog_otp_verify, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_otp_verify, null);
 
         TextView  tvOtpEmail   = dialogView.findViewById(R.id.tvOtpEmail);
         EditText  etOtp        = dialogView.findViewById(R.id.etOtpCode);
@@ -288,8 +245,6 @@ public class CheckoutFragment extends Fragment {
         TextView  tvResend     = dialogView.findViewById(R.id.tvResendOtp);
         Button    btnVerify    = dialogView.findViewById(R.id.btnVerifyOtp);
         ProgressBar pbVerify   = dialogView.findViewById(R.id.pbOtpVerify);
-
-        // Mask email for privacy: zo***@gmail.com
         String maskedEmail = maskEmail(userEmail);
         tvOtpEmail.setText("OTP sent to " + maskedEmail);
 
@@ -298,21 +253,14 @@ public class CheckoutFragment extends Fragment {
                 .setCancelable(true)
                 .create();
         dialog.show();
-
-        // ── 5 minute countdown ────────────────────────────────
         CountDownTimer[] timer = {null};
         timer[0] = new CountDownTimer(5 * 60 * 1000, 1000) {
             @Override
             public void onTick(long ms) {
                 long minutes = ms / 60000;
                 long seconds = (ms % 60000) / 1000;
-                tvCountdown.setText(String.format(
-                        Locale.getDefault(),
-                        "Expires in %02d:%02d", minutes, seconds));
-                tvCountdown.setTextColor(
-                        ms < 60000
-                                ? 0xFFFF5722  // red when < 1 min
-                                : 0xFF888888);
+                tvCountdown.setText(String.format(Locale.getDefault(), "Expires in %02d:%02d", minutes, seconds));
+                tvCountdown.setTextColor(ms < 60000 ? 0xFFFF5722 : 0xFF888888);
             }
 
             @Override
@@ -323,28 +271,22 @@ public class CheckoutFragment extends Fragment {
             }
         }.start();
 
-        // Cancel timer when dialog is dismissed
         dialog.setOnDismissListener(d -> {
             if (timer[0] != null) timer[0].cancel();
         });
 
-        // ── Auto-focus and format OTP input ──────────────────
         etOtp.requestFocus();
         etOtp.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(
-                    CharSequence s, int st, int c, int a) {}
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
             @Override public void afterTextChanged(Editable s) {}
             @Override
-            public void onTextChanged(CharSequence s,
-                                      int st, int b, int c) {
-                // Auto-verify when 6 digits entered
+            public void onTextChanged(CharSequence s, int st, int b, int c) {
                 if (s.length() == 6) {
                     btnVerify.performClick();
                 }
             }
         });
 
-        // ── Resend OTP ────────────────────────────────────────
         tvResend.setOnClickListener(v -> {
             if (timer[0] != null) timer[0].cancel();
             pendingOtp = OtpManager.generateAndSave(userId);
@@ -352,29 +294,20 @@ public class CheckoutFragment extends Fragment {
             tvResend.setTextColor(0xFFAAAAAA);
             tvResend.setText("Resending...");
 
-            OtpManager.sendOtpEmail(userEmail, userName,
-                    pendingOtp, new OtpManager.OtpEmailCallback() {
+            OtpManager.sendOtpEmail(userEmail, userName, pendingOtp, new OtpManager.OtpEmailCallback() {
                         @Override
                         public void onSuccess() {
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 tvResend.setText("Resend OTP");
                                 tvResend.setEnabled(true);
                                 tvResend.setTextColor(0xFF009688);
-                                Toast.makeText(getContext(),
-                                        "New OTP sent!",
-                                        Toast.LENGTH_SHORT).show();
-                                // Restart timer
-                                timer[0] = new CountDownTimer(
-                                        5 * 60 * 1000, 1000) {
+                                Toast.makeText(getContext(), "New OTP sent!", Toast.LENGTH_SHORT).show();
+                                timer[0] = new CountDownTimer(5 * 60 * 1000, 1000) {
                                     @Override
                                     public void onTick(long ms) {
                                         long min = ms / 60000;
                                         long sec = (ms % 60000) / 1000;
-                                        tvCountdown.setText(
-                                                String.format(
-                                                        Locale.getDefault(),
-                                                        "Expires in %02d:%02d",
-                                                        min, sec));
+                                        tvCountdown.setText(String.format(Locale.getDefault(), "Expires in %02d:%02d", min, sec));
                                     }
                                     @Override
                                     public void onFinish() {
@@ -390,15 +323,12 @@ public class CheckoutFragment extends Fragment {
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 tvResend.setText("Resend OTP");
                                 tvResend.setEnabled(true);
-                                Toast.makeText(getContext(),
-                                        "Resend failed: " + error,
-                                        Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Resend failed: " + error, Toast.LENGTH_SHORT).show();
                             });
                         }
                     });
         });
 
-        // ── Verify button ─────────────────────────────────────
         btnVerify.setOnClickListener(v -> {
             String entered = etOtp.getText().toString().trim();
 
@@ -410,41 +340,28 @@ public class CheckoutFragment extends Fragment {
             pbVerify.setVisibility(View.VISIBLE);
             btnVerify.setEnabled(false);
 
-            // Validate against Firebase (checks expiry too)
             FirebaseDatabase.getInstance(DB_URL)
                     .getReference("otps").child(userId)
                     .addListenerForSingleValueEvent(
                             new ValueEventListener() {
                                 @Override
-                                public void onDataChange(
-                                        @NonNull DataSnapshot snap) {
+                                public void onDataChange(@NonNull DataSnapshot snap) {
                                     pbVerify.setVisibility(View.GONE);
-
-                                    String savedOtp = snap.child("code")
-                                            .getValue(String.class);
-                                    Long expiry = snap.child("expiry")
-                                            .getValue(Long.class);
-                                    boolean verified = Boolean.TRUE.equals(
-                                            snap.child("verified")
-                                                    .getValue(Boolean.class));
+                                    String savedOtp = snap.child("code").getValue(String.class);
+                                    Long expiry = snap.child("expiry").getValue(Long.class);
+                                    boolean verified = Boolean.TRUE.equals(snap.child("verified").getValue(Boolean.class));
 
                                     if (verified) {
-                                        showOtpError(etOtp, btnVerify,
-                                                "OTP already used");
+                                        showOtpError(etOtp, btnVerify, "OTP already used");
                                         return;
                                     }
 
-                                    if (expiry != null
-                                            && System.currentTimeMillis()
-                                            > expiry) {
-                                        showOtpError(etOtp, btnVerify,
-                                                "OTP expired. Please resend.");
+                                    if (expiry != null && System.currentTimeMillis() > expiry) {
+                                        showOtpError(etOtp, btnVerify, "OTP expired. Please resend.");
                                         return;
                                     }
 
                                     if (entered.equals(savedOtp)) {
-                                        // ✅ Correct OTP
-                                        // Mark as used
                                         FirebaseDatabase.getInstance(DB_URL)
                                                 .getReference("otps")
                                                 .child(userId)
@@ -457,52 +374,39 @@ public class CheckoutFragment extends Fragment {
                                         placeOrder(pendingPaymentMethod);
 
                                     } else {
-                                        // ❌ Wrong OTP
-                                        showOtpError(etOtp, btnVerify,
-                                                "Incorrect OTP. Try again.");
+                                        showOtpError(etOtp, btnVerify, "Incorrect OTP. Try again.");
                                     }
                                 }
 
                                 @Override
-                                public void onCancelled(
-                                        @NonNull DatabaseError error) {
+                                public void onCancelled(@NonNull DatabaseError error) {
                                     pbVerify.setVisibility(View.GONE);
                                     btnVerify.setEnabled(true);
-                                    Toast.makeText(getContext(),
-                                            "Verification failed",
-                                            Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Verification failed", Toast.LENGTH_SHORT).show();
                                 }
                             });
         });
     }
 
-    private void showOtpError(EditText etOtp, Button btnVerify,
-                              String msg) {
+    private void showOtpError(EditText etOtp, Button btnVerify, String msg) {
         etOtp.setError(msg);
         etOtp.setText("");
         etOtp.requestFocus();
         btnVerify.setEnabled(true);
     }
 
-    // ── Mask email for display ────────────────────────────────
     private String maskEmail(String email) {
         if (email == null) return "your email";
         int atIndex = email.indexOf("@");
         if (atIndex <= 2) return email;
-        return email.substring(0, 2)
-                + "***"
-                + email.substring(atIndex);
+        return email.substring(0, 2) + "***" + email.substring(atIndex);
     }
 
-    // ── Write confirmed order to Firebase ────────────────────
     private void placeOrder(String paymentMethod) {
         if (userId == null || userOrdersRef == null) return;
-
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Placing Order...");
-
         double total = cartDb.getTotal(userId);
-
         List<Map<String, Object>> itemsList = new ArrayList<>();
         for (CartItem item : cartItems) {
             Map<String, Object> itemMap = new HashMap<>();
@@ -514,10 +418,7 @@ public class CheckoutFragment extends Fragment {
             itemMap.put("imageURL",   item.getImageUrl());
             itemsList.add(itemMap);
         }
-
-        String timestamp = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                .format(new Date());
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
         Map<String, Object> order = new HashMap<>();
         order.put("fullName",      pendingFullName);
@@ -535,30 +436,18 @@ public class CheckoutFragment extends Fragment {
         String orderId = userOrdersRef.push().getKey();
         userOrdersRef.child(orderId).setValue(order)
                 .addOnSuccessListener(unused -> {
-                    // Clean up OTP from DB
-                    FirebaseDatabase.getInstance(DB_URL)
-                            .getReference("otps")
-                            .child(userId).removeValue();
+                    FirebaseDatabase.getInstance(DB_URL).getReference("otps").child(userId).removeValue();
 
                     cartDb.clearCart(userId);
                     getParentFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container,
-                                    OrderSuccessFragment.newInstance(
-                                            orderId, total,
-                                            paymentMethod,
-                                            pendingFullName,
-                                            pendingAddress,
-                                            pendingCity,
-                                            itemsList))
+                            .replace(R.id.fragment_container, OrderSuccessFragment.newInstance(orderId, total, paymentMethod, pendingFullName, pendingAddress, pendingCity, itemsList))
                             .addToBackStack(null)
                             .commit();
                 })
                 .addOnFailureListener(e -> {
                     btnPlaceOrder.setEnabled(true);
                     btnPlaceOrder.setText("Place Order");
-                    Toast.makeText(getContext(),
-                            "Order failed: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Order failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 }

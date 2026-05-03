@@ -16,10 +16,8 @@ public class Onboarding extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_onboarding);
 
-        // Initialize view
         btnGetStarted = findViewById(R.id.btnGetStarted);
 
-        // Navigation logic (Equivalent to navigation.navigate('Login'))
         btnGetStarted.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

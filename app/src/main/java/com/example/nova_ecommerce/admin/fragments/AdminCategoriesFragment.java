@@ -33,8 +33,7 @@ import java.util.List;
 
 public class AdminCategoriesFragment extends Fragment {
 
-    private static final String ADMIN_UID =
-            "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
+    private static final String ADMIN_UID = "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
 
     private RecyclerView              recyclerCategories;
     private AdminCategoryAdapter      adapter;
@@ -48,9 +47,7 @@ public class AdminCategoriesFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
                 R.layout.fragment_admin_categories, container, false);
 
@@ -59,31 +56,20 @@ public class AdminCategoriesFragment extends Fragment {
         tvEmpty            = view.findViewById(R.id.tvEmptyAdminCat);
         fabAddCategory     = view.findViewById(R.id.fabAddCategory);
 
-        adminRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+        adminRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
         ).getReference("products").child(ADMIN_UID);
 
-        // 2-column grid
-        recyclerCategories.setLayoutManager(
-                new GridLayoutManager(getContext(), 2));
+        recyclerCategories.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        adapter = new AdminCategoryAdapter(
-                getContext(),
-                searchList,
-                // ── Edit callback ──────────────────────────────
-                category -> showEditCategoryDialog(category),
-                // ── Delete callback ────────────────────────────
+        adapter = new AdminCategoryAdapter(getContext(), searchList, category -> showEditCategoryDialog(category),
                 category -> showDeleteCategoryDialog(category)
         );
         recyclerCategories.setAdapter(adapter);
-
         fabAddCategory.setOnClickListener(v -> showAddCategoryDialog());
-
         loadCategories();
         return view;
     }
 
-    // ── Load ──────────────────────────────────────────────────
     private void loadCategories() {
         progressBar.setVisibility(View.VISIBLE);
         adminRef.addValueEventListener(new ValueEventListener() {
@@ -92,36 +78,27 @@ public class AdminCategoriesFragment extends Fragment {
                 categoryList.clear();
                 for (DataSnapshot catSnap : snapshot.getChildren()) {
                     String catId   = catSnap.getKey();
-                    String catName = catSnap.child("name")
-                            .getValue(String.class);
-                    String catImg  = catSnap.child("imageURL")
-                            .getValue(String.class);
+                    String catName = catSnap.child("name").getValue(String.class);
+                    String catImg  = catSnap.child("imageURL").getValue(String.class);
                     if (catName != null) {
-                        categoryList.add(new Category(
-                                catId, catName,
-                                catImg != null ? catImg : ""));
+                        categoryList.add(new Category(catId, catName, catImg != null ? catImg : ""));
                     }
                 }
                 searchList.clear();
                 searchList.addAll(categoryList);
                 adapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
-                tvEmpty.setVisibility(
-                        categoryList.isEmpty()
-                                ? View.VISIBLE : View.GONE);
+                tvEmpty.setVisibility(categoryList.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getContext(),
-                        "Error: " + error.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // ── Add Dialog ────────────────────────────────────────────
     private void showAddCategoryDialog() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_category, null);
         EditText etName = view.findViewById(R.id.etCatName);
@@ -145,7 +122,6 @@ public class AdminCategoriesFragment extends Fragment {
                 .show();
     }
 
-    // ── Edit Dialog ───────────────────────────────────────────
     private void showEditCategoryDialog(Category category) {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_category, null);
         EditText etName = view.findViewById(R.id.etCatName);
@@ -171,7 +147,6 @@ public class AdminCategoriesFragment extends Fragment {
                 .show();
     }
 
-    // ── Delete Dialog ─────────────────────────────────────────
     private void showDeleteCategoryDialog(Category category) {
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(getContext(), R.style.MaterialAlertDialog_Nova)
                 .setTitle("Delete Category")
@@ -194,10 +169,7 @@ public class AdminCategoriesFragment extends Fragment {
         } else {
             String lower = query.toLowerCase();
             for (Category p : categoryList) {
-                if ((p.getName() != null
-                        && p.getName().toLowerCase().contains(lower))
-                        || (p.getName() != null
-                        && p.getName().toLowerCase().contains(lower))) {
+                if ((p.getName() != null && p.getName().toLowerCase().contains(lower)) || (p.getName() != null && p.getName().toLowerCase().contains(lower))) {
                     searchList.add(p);
                 }
             }

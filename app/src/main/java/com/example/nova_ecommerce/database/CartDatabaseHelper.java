@@ -14,11 +14,11 @@ import java.util.List;
 public class CartDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "nova_cart.db";
-    private static final int DB_VERSION = 4; // 🔥 IMPORTANT: increase version
+    private static final int DB_VERSION = 4;
 
     public static final String TABLE_CART = "cart";
     public static final String COL_ID = "id";
-    public static final String COL_USER_ID = "user_id";   // ✅ NEW
+    public static final String COL_USER_ID = "user_id";
     public static final String COL_PRODUCT_ID = "product_id";
     public static final String COL_CATEGORY_ID = "category_id";
     public static final String COL_NAME = "name";
@@ -56,20 +56,16 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // 🔥 Simplest: reset DB
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CART);
         onCreate(db);
     }
 
-    // ✅ ADD OR INCREMENT (USER BASED)
     public void addOrIncrement(CartItem item, String userId) {
         SQLiteDatabase db = getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_CART,
-                new String[]{COL_ID, COL_QUANTITY},
-                COL_PRODUCT_ID + "=? AND " + COL_USER_ID + "=?",
-                new String[]{item.getProductId(), userId},
-                null, null, null);
+                new String[]{COL_ID, COL_QUANTITY}, COL_PRODUCT_ID + "=? AND " + COL_USER_ID + "=?",
+                new String[]{item.getProductId(), userId}, null, null, null);
 
         if (cursor.moveToFirst()) {
             int qty = cursor.getInt(cursor.getColumnIndexOrThrow(COL_QUANTITY));
@@ -80,7 +76,7 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
             db.update(TABLE_CART, cv, COL_ID + "=?", new String[]{id});
         } else {
             ContentValues cv = new ContentValues();
-            cv.put(COL_USER_ID, userId);  // ✅ KEY FIX
+            cv.put(COL_USER_ID, userId);
             cv.put(COL_PRODUCT_ID, item.getProductId());
             cv.put(COL_CATEGORY_ID, item.getCategoryId());
             cv.put(COL_NAME, item.getName());
@@ -93,16 +89,11 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
     }
 
-    // ✅ GET USER CART ONLY
     public List<CartItem> getAllItems(String userId) {
         List<CartItem> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_CART,
-                null,
-                COL_USER_ID + "=?",
-                new String[]{userId},
-                null, null, null);
+        Cursor cursor = db.query(TABLE_CART, null, COL_USER_ID + "=?", new String[]{userId}, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {

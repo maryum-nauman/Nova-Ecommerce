@@ -29,7 +29,6 @@ public class OrderSuccessFragment extends Fragment {
     private static final String ARG_ADDRESS       = "address";
     private static final String ARG_CITY          = "city";
 
-    // Items passed as parallel ArrayLists
     private static final String ARG_ITEM_NAMES    = "itemNames";
     private static final String ARG_ITEM_QTYS     = "itemQtys";
     private static final String ARG_ITEM_PRICES   = "itemPrices";
@@ -49,7 +48,6 @@ public class OrderSuccessFragment extends Fragment {
         args.putString(ARG_ADDRESS,  address);
         args.putString(ARG_CITY,     city);
 
-        // Flatten item maps into parallel lists
         ArrayList<String> names  = new ArrayList<>();
         ArrayList<String> qtys   = new ArrayList<>();
         ArrayList<String> prices = new ArrayList<>();
@@ -94,45 +92,29 @@ public class OrderSuccessFragment extends Fragment {
 
         Bundle args = getArguments();
         if (args != null) {
-            // Short order ID (last 8 chars)
             String fullId = args.getString(ARG_ORDER_ID, "");
-            String shortId = fullId.length() > 8
-                    ? fullId.substring(fullId.length() - 8)
-                    : fullId;
+            String shortId = fullId.length() > 8 ? fullId.substring(fullId.length() - 8) : fullId;
             tvOrderId.setText("Order #" + shortId.toUpperCase());
 
-            tvTotal.setText("Rs. " + String.format(
-                    "%,.0f", args.getDouble(ARG_TOTAL)));
+            tvTotal.setText("Rs. " + String.format("%,.0f", args.getDouble(ARG_TOTAL)));
             tvPayment.setText(args.getString(ARG_PAYMENT));
             tvName.setText(args.getString(ARG_NAME));
-            tvAddress.setText(args.getString(ARG_ADDRESS)
-                    + ", " + args.getString(ARG_CITY));
+            tvAddress.setText(args.getString(ARG_ADDRESS) + ", " + args.getString(ARG_CITY));
 
-            // Build items list for adapter
-            List<String> names  = args.getStringArrayList(
-                    ARG_ITEM_NAMES);
-            List<String> qtys   = args.getStringArrayList(
-                    ARG_ITEM_QTYS);
-            List<String> prices = args.getStringArrayList(
-                    ARG_ITEM_PRICES);
-            List<String> images = args.getStringArrayList(
-                    ARG_ITEM_IMAGES);
+            List<String> names  = args.getStringArrayList(ARG_ITEM_NAMES);
+            List<String> qtys   = args.getStringArrayList(ARG_ITEM_QTYS);
+            List<String> prices = args.getStringArrayList(ARG_ITEM_PRICES);
+            List<String> images = args.getStringArrayList(ARG_ITEM_IMAGES);
 
-            rvItems.setLayoutManager(
-                    new LinearLayoutManager(getContext()));
-            rvItems.setAdapter(new SuccessItemAdapter(
-                    getContext(), names, qtys, prices, images));
+            rvItems.setLayoutManager(new LinearLayoutManager(getContext()));
+            rvItems.setAdapter(new SuccessItemAdapter(getContext(), names, qtys, prices, images));
             rvItems.setNestedScrollingEnabled(false);
         }
 
         btnContinue.setOnClickListener(v -> {
-            getParentFragmentManager()
-                    .popBackStack(null,
-                            androidx.fragment.app.FragmentManager
-                                    .POP_BACK_STACK_INCLUSIVE);
+            getParentFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container,
-                            new ShopFragment())
+                    .replace(R.id.fragment_container, new ShopFragment())
                     .commit();
         });
 

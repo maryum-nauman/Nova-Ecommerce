@@ -59,19 +59,17 @@ public class ProductDetailFragment extends Fragment {
     private RecyclerView recyclerRelated, recyclerReviews;
     private TextView     tvNoReviews;
 
-    // ── Data ──────────────────────────────────────────────────
-    private Product            currentProduct;
+    private Product  currentProduct;
     private final List<Product> relatedList  = new ArrayList<>();
     private final List<Review>  reviewList   = new ArrayList<>();
     private ProductAdapter     relatedAdapter;
     private ReviewAdapter      reviewAdapter;
     private CartDatabaseHelper cartDb;
-    private String             userId;
-    private String             userName;
-    private String             categoryId;
+    private String userId;
+    private String  userName;
+    private String  categoryId;
 
-    public static ProductDetailFragment newInstance(String productId,
-                                                    String categoryId) {
+    public static ProductDetailFragment newInstance(String productId, String categoryId) {
         ProductDetailFragment f = new ProductDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PRODUCT_ID,  productId);
@@ -82,22 +80,16 @@ public class ProductDetailFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_product_detail, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_product_detail, container, false);
 
         cartDb = CartDatabaseHelper.getInstance(getContext());
 
-        // Get current user info
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            userId = FirebaseAuth.getInstance()
-                    .getCurrentUser().getUid();
-            fetchUserName(); // load name from DB for reviews
+            userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            fetchUserName();
         }
 
-        // ── Bind views ────────────────────────────────────────
         imgProduct      = view.findViewById(R.id.imgProductDetail);
         btnBack         = view.findViewById(R.id.btnBack);
         btnFavorite     = view.findViewById(R.id.btnFavoriteDetail);
@@ -115,22 +107,17 @@ public class ProductDetailFragment extends Fragment {
         recyclerReviews = view.findViewById(R.id.recyclerReviews);
         tvNoReviews     = view.findViewById(R.id.tvNoReviews);
 
-        // Related products setup
-        recyclerRelated.setLayoutManager(
-                new GridLayoutManager(getContext(), 2));
+        recyclerRelated.setLayoutManager(new GridLayoutManager(getContext(), 2));
         relatedAdapter = new ProductAdapter(getContext(), relatedList);
         recyclerRelated.setAdapter(relatedAdapter);
         recyclerRelated.setNestedScrollingEnabled(false);
 
-        // Reviews setup
-        recyclerReviews.setLayoutManager(
-                new LinearLayoutManager(getContext()));
+        recyclerReviews.setLayoutManager(new LinearLayoutManager(getContext()));
         reviewAdapter = new ReviewAdapter(getContext(), reviewList);
         recyclerReviews.setAdapter(reviewAdapter);
         recyclerReviews.setNestedScrollingEnabled(false);
 
-        btnBack.setOnClickListener(v ->
-                getParentFragmentManager().popBackStack());
+        btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         btnWriteReview.setOnClickListener(v -> showWriteReviewDialog());
 
@@ -143,11 +130,8 @@ public class ProductDetailFragment extends Fragment {
         return view;
     }
 
-    // ── Fetch the logged-in user's display name ───────────────
     private void fetchUserName() {
-        FirebaseDatabase.getInstance(
-                        "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-                ).getReference("users").child(userId).child("name")
+        FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("users").child(userId).child("name")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snap) {
@@ -161,11 +145,8 @@ public class ProductDetailFragment extends Fragment {
                 });
     }
 
-    // ── Load product from Firebase ────────────────────────────
     private void loadProduct(String productId, String catId) {
-        DatabaseReference productRef = FirebaseDatabase.getInstance(
-                        "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-                ).getReference("products")
+        DatabaseReference productRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("products")
                 .child(ADMIN_UID).child(catId)
                 .child("items").child(productId);
 
@@ -177,7 +158,6 @@ public class ProductDetailFragment extends Fragment {
                 currentProduct.setId(snapshot.getKey());
                 currentProduct.setCategoryId(catId);
 
-                // Fetch category name
                 FirebaseDatabase.getInstance(
                                 "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
                         ).getReference("products")
@@ -185,8 +165,7 @@ public class ProductDetailFragment extends Fragment {
                         .addListenerForSingleValueEvent(
                                 new ValueEventListener() {
                                     @Override
-                                    public void onDataChange(
-                                            @NonNull DataSnapshot s) {
+                                    public void onDataChange(@NonNull DataSnapshot s) {
                                         String n = s.getValue(String.class);
                                         if (n != null)
                                             currentProduct.setCategoryName(n);
@@ -195,8 +174,7 @@ public class ProductDetailFragment extends Fragment {
                                         loadReviews(productId, catId);
                                     }
                                     @Override
-                                    public void onCancelled(
-                                            @NonNull DatabaseError e) {
+                                    public void onCancelled(@NonNull DatabaseError e) {
                                         bindProduct();
                                     }
                                 });
@@ -204,14 +182,11 @@ public class ProductDetailFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(),
-                        "Error loading product",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error loading product", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // ── Bind product data to views ────────────────────────────
     private void bindProduct() {
         Glide.with(this)
                 .load(currentProduct.getImageURL())
@@ -222,23 +197,19 @@ public class ProductDetailFragment extends Fragment {
         tvName.setText(currentProduct.getName());
         tvPrice.setText(currentProduct.getFormattedPrice());
         tvRating.setText(String.valueOf(currentProduct.getRating()));
-        tvReviewCount.setText("(" + currentProduct.getReviewCount()
-                + " reviews)");
+        tvReviewCount.setText("(" + currentProduct.getReviewCount() + " reviews)");
         tvCategory.setText(currentProduct.getCategoryName());
         tvDescription.setText(currentProduct.getDescription());
         ratingBarDetail.setRating((float) currentProduct.getRating());
 
         updateFavoriteIcon();
 
-        // Favorite toggle
         btnFavorite.setOnClickListener(v -> {
 
-            // TEMP DEBUG — remove after fixing
             android.util.Log.d("FAV_DEBUG", "=== FAVORITE TAPPED ===");
             android.util.Log.d("FAV_DEBUG", "userId = " + userId);
             android.util.Log.d("FAV_DEBUG", "productId = " + (currentProduct != null ? currentProduct.getId() : "NULL PRODUCT"));
             android.util.Log.d("FAV_DEBUG", "isFav = " + (currentProduct != null ? currentProduct.isFavorite() : "N/A"));
-            // ... your existing code continues unchanged below
 
             boolean nowFav = !currentProduct.isFavorite();
             currentProduct.setFavorite(nowFav);
@@ -311,7 +282,6 @@ public class ProductDetailFragment extends Fragment {
                         : R.drawable.ic_favorite_border);
     }
 
-    // ── Load reviews from Firebase ────────────────────────────
     private void loadReviews(String productId, String catId) {
         DatabaseReference reviewsRef = FirebaseDatabase.getInstance(
                         "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
@@ -342,7 +312,6 @@ public class ProductDetailFragment extends Fragment {
         });
     }
 
-    // ── Write review dialog ───────────────────────────────────
     private void showWriteReviewDialog() {
         if (userId == null) {
             Toast.makeText(getContext(),
@@ -384,7 +353,6 @@ public class ProductDetailFragment extends Fragment {
                 .show();
     }
 
-    // ── Submit review to Firebase ─────────────────────────────
     private void submitReview(float rating, String comment) {
         String timestamp = new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm", Locale.getDefault())
@@ -402,7 +370,6 @@ public class ProductDetailFragment extends Fragment {
                 .child(currentProduct.getId())
                 .child("reviews").push().getKey();
 
-        // ── 1. Save under product ─────────────────────────────
         Map<String, Object> productReview = new HashMap<>();
         productReview.put("reviewId",   reviewId);
         productReview.put("userId",     userId);
@@ -421,7 +388,6 @@ public class ProductDetailFragment extends Fragment {
                 .child(reviewId)
                 .setValue(productReview);
 
-        // ── 2. Save under user (includes product info) ────────
         Map<String, Object> userReview = new HashMap<>();
         userReview.put("reviewId",    reviewId);
         userReview.put("productId",   currentProduct.getId());
@@ -444,7 +410,6 @@ public class ProductDetailFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show());
     }
 
-    // ── Load related products ─────────────────────────────────
     private void loadRelatedProducts(String catId) {
         FirebaseDatabase.getInstance(
                         "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"

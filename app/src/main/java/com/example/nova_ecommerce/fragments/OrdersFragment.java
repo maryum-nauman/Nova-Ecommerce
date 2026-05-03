@@ -61,10 +61,9 @@ public class OrdersFragment extends Fragment {
 
         rvOrders = view.findViewById(R.id.rvOrders);
         tvNoOrders = view.findViewById(R.id.tvNoOrders);
-        tvTitle = view.findViewById(R.id.tvOrdersTitle); // Assuming ID in layout
+        tvTitle = view.findViewById(R.id.tvOrdersTitle);
         btnBack = view.findViewById(R.id.btnBackOrders);
 
-        // Update Title based on filter
         if (tvTitle != null) {
             if ("all".equalsIgnoreCase(filterStatus)) {
                 tvTitle.setText("My Orders");
@@ -101,14 +100,12 @@ public class OrdersFragment extends Fragment {
                     if (order != null) {
                         order.setOrderId(ds.getKey());
                         
-                        // Apply Filter
-                        if ("all".equalsIgnoreCase(filterStatus) || 
+                        if ("all".equalsIgnoreCase(filterStatus) ||
                             (order.getStatus() != null && order.getStatus().equalsIgnoreCase(filterStatus))) {
                             orderList.add(order);
                         }
                     }
                 }
-                // Show newest orders first
                 Collections.reverse(orderList);
                 adapter.notifyDataSetChanged();
 

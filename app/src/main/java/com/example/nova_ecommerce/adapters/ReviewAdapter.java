@@ -20,7 +20,7 @@ public class ReviewAdapter extends
 
     private final Context       context;
     private final List<Review>  reviewList;
-    private boolean showProductName = false; // Default: show User Name
+    private boolean showProductName = false;
     private OnReviewClickListener listener;
 
     public interface OnReviewClickListener {
@@ -54,7 +54,6 @@ public class ReviewAdapter extends
                                  int position) {
         Review review = reviewList.get(position);
 
-        // Logic: Show Product Name on Profile, User Name on Product Detail
         if (showProductName) {
             holder.tvUserName.setText(review.getProductName());
         } else {
@@ -65,7 +64,6 @@ public class ReviewAdapter extends
         holder.tvTimestamp.setText(review.getTimestamp());
         holder.ratingBar.setRating((float) review.getRating());
 
-        // Show initials avatar
         String title = showProductName ? review.getProductName() : review.getUserName();
         if (title != null && !title.isEmpty()) {
             holder.tvAvatar.setText(

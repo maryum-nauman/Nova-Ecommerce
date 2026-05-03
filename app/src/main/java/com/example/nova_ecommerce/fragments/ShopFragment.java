@@ -28,8 +28,7 @@ import java.util.List;
 
 public class ShopFragment extends Fragment {
 
-    private static final String ADMIN_UID =
-            "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
+    private static final String ADMIN_UID = "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
 
     private RecyclerView    rvDeals, rvRecommended;
     private DealAdapter     dealsAdapter;
@@ -42,11 +41,8 @@ public class ShopFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_shop, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_shop, container, false);
 
         rvDeals       = view.findViewById(R.id.recyclerDeals);
         rvRecommended = view.findViewById(R.id.recyclerRecommended);
@@ -58,37 +54,26 @@ public class ShopFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
-        // Deals — horizontal, uses DealAdapter
-        rvDeals.setLayoutManager(new LinearLayoutManager(
-                getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvDeals.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         dealsAdapter = new DealAdapter(getContext(), dealsList);
         rvDeals.setAdapter(dealsAdapter);
-        dealsAdapter.setOnDealClickListener(product ->
-                navigateToDetail(product));
+        dealsAdapter.setOnDealClickListener(product -> navigateToDetail(product));
 
-        // Recommended — 2-col grid, uses ProductAdapter
-        rvRecommended.setLayoutManager(
-                new GridLayoutManager(getContext(), 2));
-        recommendedAdapter = new ProductAdapter(
-                getContext(), recommendedList);
+        rvRecommended.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recommendedAdapter = new ProductAdapter(getContext(), recommendedList);
         rvRecommended.setAdapter(recommendedAdapter);
-        recommendedAdapter.setOnProductClickListener(product ->
-                navigateToDetail(product));
+        recommendedAdapter.setOnProductClickListener(product -> navigateToDetail(product));
     }
 
     private void navigateToDetail(Product product) {
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container,
-                        ProductDetailFragment.newInstance(
-                                product.getId(),
-                                product.getCategoryId()))
+                .replace(R.id.fragment_container, ProductDetailFragment.newInstance(product.getId(), product.getCategoryId()))
                 .addToBackStack(null)
                 .commit();
     }
 
     private void loadData() {
-        DatabaseReference adminRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+        DatabaseReference adminRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
         ).getReference("products").child(ADMIN_UID);
 
         adminRef.addValueEventListener(new ValueEventListener() {
@@ -100,11 +85,9 @@ public class ShopFragment extends Fragment {
 
                 for (DataSnapshot catSnap : adminSnap.getChildren()) {
                     String catId   = catSnap.getKey();
-                    String catName = catSnap.child("name")
-                            .getValue(String.class);
+                    String catName = catSnap.child("name").getValue(String.class);
 
-                    for (DataSnapshot productSnap
-                            : catSnap.child("items").getChildren()) {
+                    for (DataSnapshot productSnap : catSnap.child("items").getChildren()) {
                         Product product = productSnap.getValue(Product.class);
                         if (product != null) {
                             product.setId(productSnap.getKey());
@@ -113,7 +96,7 @@ public class ShopFragment extends Fragment {
                             fullList.add(product);
 
                             if (product.isFeatured()) {
-                                if (dealsList.size() < 4) // ← max 4 deals
+                                if (dealsList.size() < 4)
                                     dealsList.add(product);
                             } else {
                                 recommendedList.add(product);
@@ -124,9 +107,7 @@ public class ShopFragment extends Fragment {
 
                 dealsAdapter.notifyDataSetChanged();
                 recommendedAdapter.notifyDataSetChanged();
-                tvEmpty.setVisibility(
-                        recommendedList.isEmpty() && dealsList.isEmpty()
-                                ? View.VISIBLE : View.GONE);
+                tvEmpty.setVisibility(recommendedList.isEmpty() && dealsList.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
@@ -136,7 +117,6 @@ public class ShopFragment extends Fragment {
 
     public void filterProducts(String query) {
         if (recommendedAdapter == null || fullList.isEmpty()) return;
-
         recommendedList.clear();
 
         if (query.isEmpty()) {
@@ -149,16 +129,12 @@ public class ShopFragment extends Fragment {
             rvDeals.setVisibility(View.GONE);
             String lower = query.toLowerCase().trim();
             for (Product p : fullList) {
-                boolean matchName = p.getName() != null
-                        && p.getName().toLowerCase().contains(lower);
-                boolean matchCat  = p.getCategoryName() != null
-                        && p.getCategoryName().toLowerCase().contains(lower);
+                boolean matchName = p.getName() != null && p.getName().toLowerCase().contains(lower);
+                boolean matchCat  = p.getCategoryName() != null && p.getCategoryName().toLowerCase().contains(lower);
                 if (matchName || matchCat) recommendedList.add(p);
             }
-            tvEmpty.setVisibility(
-                    recommendedList.isEmpty() ? View.VISIBLE : View.GONE);
+            tvEmpty.setVisibility(recommendedList.isEmpty() ? View.VISIBLE : View.GONE);
         }
-
         recommendedAdapter.notifyDataSetChanged();
     }
 }

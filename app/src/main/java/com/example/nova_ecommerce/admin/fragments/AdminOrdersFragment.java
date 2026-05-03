@@ -43,20 +43,15 @@ public class AdminOrdersFragment extends Fragment {
     private TextView             tvEmpty, tvOrderCount;
     private Spinner              spinnerFilter;
     private DatabaseReference    usersRef;
-
-    // Full list loaded once — filter applies on top
     private final List<AdminOrder> allOrders      = new ArrayList<>();
     private final List<AdminOrder> filteredOrders = new ArrayList<>();
 
-    private int selectedDays = 7; // default filter
+    private int selectedDays = 7;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_admin_orders, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_admin_orders, container, false);
 
         recyclerOrders = view.findViewById(R.id.recyclerAdminOrders);
         progressBar    = view.findViewById(R.id.progressBarAdminOrders);
@@ -64,26 +59,17 @@ public class AdminOrdersFragment extends Fragment {
         tvOrderCount   = view.findViewById(R.id.tvAdminOrderCount);
         spinnerFilter  = view.findViewById(R.id.spinnerOrderFilter);
 
-        usersRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-        ).getReference("users");
+        usersRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("users");
 
-        // ── RecyclerView setup ────────────────────────────────
-        recyclerOrders.setLayoutManager(
-                new LinearLayoutManager(getContext()));
-        adapter = new AdminOrdersAdapter(
-                getContext(), filteredOrders,
-                order -> showOrderDetailDialog(order));
+        recyclerOrders.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new AdminOrdersAdapter(getContext(), filteredOrders, order -> showOrderDetailDialog(order));
         recyclerOrders.setAdapter(adapter);
 
-        // ── Spinner setup ─────────────────────────────────────
         setupFilterSpinner();
-
         loadAllOrders();
         return view;
     }
 
-    // ── Spinner: Last 7 / 14 / 30 days / All time ────────────
     private void setupFilterSpinner() {
         String[] filters = {
                 "Last 7 Days",
@@ -92,25 +78,18 @@ public class AdminOrdersFragment extends Fragment {
                 "All Orders"
         };
 
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                getContext(),
-                R.layout.item_spinner,
-                filters);
-        spinnerAdapter.setDropDownViewResource(
-                R.layout.item_spinner_dropdown);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), R.layout.item_spinner, filters);
+        spinnerAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
         spinnerFilter.setAdapter(spinnerAdapter);
 
-        spinnerFilter.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
+        spinnerFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
-                    public void onItemSelected(AdapterView<?> parent,
-                                               View view, int pos,
-                                               long id) {
+                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                         switch (pos) {
                             case 0: selectedDays = 7;   break;
                             case 1: selectedDays = 14;  break;
                             case 2: selectedDays = 30;  break;
-                            case 3: selectedDays = -1;  break; // All
+                            case 3: selectedDays = -1;  break;
                         }
                         applyFilter();
                     }
@@ -120,32 +99,22 @@ public class AdminOrdersFragment extends Fragment {
                 });
     }
 
-    // ── Load all orders from users/{userId}/orders ────────────
     private void loadAllOrders() {
         progressBar.setVisibility(View.VISIBLE);
-
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot usersSnap) {
                 allOrders.clear();
-
                 for (DataSnapshot userSnap : usersSnap.getChildren()) {
                     String uid = userSnap.getKey();
-
-                    // Skip admin node
-                    String role = userSnap.child("role")
-                            .getValue(String.class);
+                    String role = userSnap.child("role").getValue(String.class);
                     if ("admin".equals(role)) continue;
+                    DataSnapshot ordersSnap = userSnap.child("orders");
 
-                    DataSnapshot ordersSnap =
-                            userSnap.child("orders");
-
-                    for (DataSnapshot orderSnap
-                            : ordersSnap.getChildren()) {
+                    for (DataSnapshot orderSnap : ordersSnap.getChildren()) {
                         AdminOrder order = orderSnap.getValue(AdminOrder.class);
                         if (order != null) {
                             order.setOrderId(orderSnap.getKey());
-                            // Preserve userId for detail dialog
                             if (order.getUserId() == null) {
                                 order.setUserId(uid);
                             }
@@ -154,7 +123,6 @@ public class AdminOrdersFragment extends Fragment {
                     }
                 }
 
-                // Sort newest first
                 allOrders.sort((a, b) -> {
                     if (a.getTimestamp() == null) return 1;
                     if (b.getTimestamp() == null) return -1;
@@ -168,9 +136,7 @@ public class AdminOrdersFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getContext(),
-                        "Error: " + error.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

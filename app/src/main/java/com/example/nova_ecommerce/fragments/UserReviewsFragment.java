@@ -46,23 +46,19 @@ public class UserReviewsFragment extends Fragment {
 
         rvAllUserReviews.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new ReviewAdapter(getContext(), reviewList);
-        adapter.setShowProductName(true); // ✅ Show product names instead of user names
+        adapter.setShowProductName(true);
         
-        // ✅ Add Click Listener to navigate to Product Detail
         adapter.setOnReviewClickListener(review -> {
             if (review.getProductId() != null && review.getCategoryId() != null) {
                 getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, 
-                                ProductDetailFragment.newInstance(review.getProductId(), review.getCategoryId()))
+                        .replace(R.id.fragment_container, ProductDetailFragment.newInstance(review.getProductId(), review.getCategoryId()))
                         .addToBackStack(null)
                         .commit();
             }
         });
 
         rvAllUserReviews.setAdapter(adapter);
-
         btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
-
         loadAllUserReviews();
 
         return view;
@@ -72,8 +68,7 @@ public class UserReviewsFragment extends Fragment {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
 
-        DatabaseReference ref = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com")
-                .getReference("users").child(uid).child("reviews");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("users").child(uid).child("reviews");
 
         ref.addValueEventListener(new ValueEventListener() {
             @Override

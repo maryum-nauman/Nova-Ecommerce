@@ -45,8 +45,7 @@ public class AdminChatFragment extends Fragment {
     private String                  adminId;
     private String                  chatKey;
 
-    public static AdminChatFragment newInstance(String chatKey,
-                                                String userName) {
+    public static AdminChatFragment newInstance(String chatKey, String userName) {
         AdminChatFragment f = new AdminChatFragment();
         Bundle args = new Bundle();
         args.putString(ARG_CHAT_KEY,  chatKey);
@@ -57,11 +56,8 @@ public class AdminChatFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_admin_chat, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_admin_chat, container, false);
 
         recyclerChat = view.findViewById(R.id.recyclerChat);
         etMessage    = view.findViewById(R.id.etChatMessage);
@@ -69,34 +65,22 @@ public class AdminChatFragment extends Fragment {
         btnBack      = view.findViewById(R.id.btnChatBack);
         tvChatTitle  = view.findViewById(R.id.tvChatTitle);
 
-        adminId = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
-                : "";
+        adminId = FirebaseAuth.getInstance().getCurrentUser() != null ? FirebaseAuth.getInstance().getCurrentUser().getUid() : "";
 
         if (getArguments() != null) {
             chatKey = getArguments().getString(ARG_CHAT_KEY);
-            tvChatTitle.setText(
-                    getArguments().getString(ARG_USER_NAME,
-                            "Customer"));
+            tvChatTitle.setText(getArguments().getString(ARG_USER_NAME, "Customer"));
         }
 
-        // Reference uses the full chatKey directly
-        chatRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-        ).getReference("chats").child(chatKey);
+        chatRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("chats").child(chatKey);
 
-        LinearLayoutManager llm =
-                new LinearLayoutManager(getContext());
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
         llm.setStackFromEnd(true);
         recyclerChat.setLayoutManager(llm);
-        adapter = new ChatMessageAdapter(
-                getContext(), messageList, true); // true = admin view
+        adapter = new ChatMessageAdapter(getContext(), messageList, true); // true = admin view
         recyclerChat.setAdapter(adapter);
-
-        btnBack.setOnClickListener(
-                v -> getParentFragmentManager().popBackStack());
+        btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         btnSend.setOnClickListener(v -> sendReply());
-
         loadMessages();
         resetUnreadAdmin();
         return view;
@@ -106,33 +90,27 @@ public class AdminChatFragment extends Fragment {
         chatRef.child("messages")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onDataChange(
-                            @NonNull DataSnapshot snapshot) {
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
                         messageList.clear();
-                        for (DataSnapshot child
-                                : snapshot.getChildren()) {
-                            ChatMessage msg =
-                                    child.getValue(ChatMessage.class);
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            ChatMessage msg = child.getValue(ChatMessage.class);
                             if (msg != null) {
                                 msg.setMessageId(child.getKey());
                                 messageList.add(msg);
                             }
                         }
 
-                        // ── Sort oldest → newest before displaying ─
                         adapter.sortByTimestamp();
 
                         adapter.notifyDataSetChanged();
                         if (!messageList.isEmpty()) {
-                            recyclerChat.scrollToPosition(
-                                    messageList.size() - 1);
+                            recyclerChat.scrollToPosition(messageList.size() - 1);
                         }
                         resetUnreadAdmin();
                     }
 
                     @Override
-                    public void onCancelled(
-                            @NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
 
@@ -151,29 +129,22 @@ public class AdminChatFragment extends Fragment {
         msgMap.put("isAdmin",    true);
 
         chatRef.child("messages").child(msgId).setValue(msgMap);
-
-        // Update preview
         Map<String, Object> meta = new HashMap<>();
         meta.put("lastMessage",   text);
         meta.put("lastTimestamp", now);
         chatRef.updateChildren(meta);
 
-        // Increment user's unread
         chatRef.child("unreadUser")
                 .addListenerForSingleValueEvent(
                         new ValueEventListener() {
                             @Override
-                            public void onDataChange(
-                                    @NonNull DataSnapshot s) {
-                                long cur = s.getValue(Long.class) != null
-                                        ? s.getValue(Long.class) : 0;
-                                chatRef.child("unreadUser")
-                                        .setValue(cur + 1);
+                            public void onDataChange(@NonNull DataSnapshot s) {
+                                long cur = s.getValue(Long.class) != null ? s.getValue(Long.class) : 0;
+                                chatRef.child("unreadUser").setValue(cur + 1);
                             }
 
                             @Override
-                            public void onCancelled(
-                                    @NonNull DatabaseError e) {}
+                            public void onCancelled(@NonNull DatabaseError e) {}
                         });
 
         etMessage.setText("");

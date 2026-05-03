@@ -1,7 +1,7 @@
 package com.example.nova_ecommerce.models;
 
 public class Category {
-    private String id;       // catId key from Firebase e.g. "cat1"
+    private String id;
     private String name;
     private String imageURL;
 

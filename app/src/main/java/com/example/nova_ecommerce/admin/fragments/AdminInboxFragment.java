@@ -40,31 +40,21 @@ public class AdminInboxFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_admin_inbox, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_admin_inbox, container, false);
 
         recyclerInbox = view.findViewById(R.id.recyclerAdminInbox);
         progressBar   = view.findViewById(R.id.progressBarInbox);
         tvEmpty       = view.findViewById(R.id.tvEmptyInbox);
 
-        // Get currently logged-in admin's UID
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            adminId = FirebaseAuth.getInstance()
-                    .getCurrentUser().getUid();
+            adminId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
 
-        chatsRef = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-        ).getReference("chats");
+        chatsRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("chats");
 
-        recyclerInbox.setLayoutManager(
-                new LinearLayoutManager(getContext()));
-        adapter = new AdminInboxAdapter(
-                getContext(), chatList,
-                chat -> openChat(chat));
+        recyclerInbox.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new AdminInboxAdapter(getContext(), chatList, chat -> openChat(chat));
         recyclerInbox.setAdapter(adapter);
 
         loadInbox();
@@ -80,66 +70,44 @@ public class AdminInboxFragment extends Fragment {
                 chatList.clear();
 
                 for (DataSnapshot child : snapshot.getChildren()) {
-                    // ── Only show chats belonging to this admin ──
-                    String chatAdminId = child.child("adminId")
-                            .getValue(String.class);
-                    if (chatAdminId == null
-                            || !chatAdminId.equals(adminId)) continue;
+                    String chatAdminId = child.child("adminId").getValue(String.class);
+                    if (chatAdminId == null || !chatAdminId.equals(adminId)) continue;
 
                     ChatPreview preview = new ChatPreview();
+                    preview.setChatKey(child.getKey());
+                    preview.setUserId(child.child("userId").getValue(String.class));
+                    preview.setUserName(child.child("userName").getValue(String.class));
+                    preview.setUserEmail(child.child("userEmail").getValue(String.class));
+                    preview.setLastMessage(child.child("lastMessage").getValue(String.class));
 
-                    preview.setChatKey(child.getKey()); // full chat key
-                    preview.setUserId(child.child("userId")
-                            .getValue(String.class));
-                    preview.setUserName(child.child("userName")
-                            .getValue(String.class));
-                    preview.setUserEmail(child.child("userEmail")
-                            .getValue(String.class));
-                    preview.setLastMessage(child.child("lastMessage")
-                            .getValue(String.class));
-
-                    Long ts = child.child("lastTimestamp")
-                            .getValue(Long.class);
+                    Long ts = child.child("lastTimestamp").getValue(Long.class);
                     preview.setLastTimestamp(ts != null ? ts : 0);
-
-                    Long unread = child.child("unreadAdmin")
-                            .getValue(Long.class);
-                    preview.setUnreadAdmin(
-                            unread != null ? unread.intValue() : 0);
+                    Long unread = child.child("unreadAdmin").getValue(Long.class);
+                    preview.setUnreadAdmin(unread != null ? unread.intValue() : 0);
 
                     if (preview.getUserName() != null) {
                         chatList.add(preview);
                     }
                 }
 
-                // Sort newest first
-                chatList.sort((a, b) ->
-                        Long.compare(b.getLastTimestamp(),
-                                a.getLastTimestamp()));
+                chatList.sort((a, b) -> Long.compare(b.getLastTimestamp(), a.getLastTimestamp()));
 
                 adapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
-                tvEmpty.setVisibility(
-                        chatList.isEmpty()
-                                ? View.VISIBLE : View.GONE);
+                tvEmpty.setVisibility(chatList.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(getContext(),
-                        "Error: " + error.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void openChat(ChatPreview chat) {
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.admin_fragment_container,
-                        AdminChatFragment.newInstance(
-                                chat.getChatKey(),  // pass full chat key
-                                chat.getUserName()))
+                .replace(R.id.admin_fragment_container, AdminChatFragment.newInstance(chat.getChatKey(), chat.getUserName()))
                 .addToBackStack(null)
                 .commit();
     }

@@ -13,7 +13,6 @@ public class Review {
 
     public Review() {}
 
-    // ── Getters ───────────────────────────────────────────────
     public String getReviewId()    { return reviewId; }
     public String getUserId()      { return userId; }
     public String getUserName()    { return userName; }
@@ -24,7 +23,6 @@ public class Review {
     public String getComment()     { return comment; }
     public String getTimestamp()   { return timestamp; }
 
-    // ── Setters ───────────────────────────────────────────────
     public void setReviewId(String reviewId)       { this.reviewId = reviewId; }
     public void setUserId(String userId)           { this.userId = userId; }
     public void setUserName(String userName)       { this.userName = userName; }

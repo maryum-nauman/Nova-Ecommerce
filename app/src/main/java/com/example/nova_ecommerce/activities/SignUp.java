@@ -48,21 +48,15 @@ public class SignUp extends AppCompatActivity {
         String confirmPass = etConfirmPassword.getText().toString().trim();
 
         if (name.isEmpty() || email.isEmpty() || pass.isEmpty()) {
-            Toast.makeText(this,
-                    "All fields are required",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
             return;
         }
         if (pass.length() < 6) {
-            Toast.makeText(this,
-                    "Password must be at least 6 characters",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!pass.equals(confirmPass)) {
-            Toast.makeText(this,
-                    "Passwords do not match!",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -72,19 +66,14 @@ public class SignUp extends AppCompatActivity {
                         String uid = mAuth.getCurrentUser().getUid();
                         saveUserToDatabase(uid, name, email);
                     } else {
-                        Toast.makeText(this,
-                                "Error: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
     private void saveUserToDatabase(String uid, String name, String email) {
-        String createdAt = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                .format(new Date());
+        String createdAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
-        // Match exact structure of your DB users node
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("name",         name);
         userMap.put("email",        email);
@@ -94,32 +83,21 @@ public class SignUp extends AppCompatActivity {
         userMap.put("profileImage", "https://via.placeholder.com/150");
         userMap.put("createdAt",    createdAt);
 
-        FirebaseDatabase.getInstance(
-                        "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-                ).getReference("users")   // ← lowercase "users" to match your DB
-                .child(uid)
-                .setValue(userMap)
+        FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+                ).getReference("users").child(uid).setValue(userMap)
                 .addOnSuccessListener(unused -> {
-                    // Send the verification email configured in your console
                     if (mAuth.getCurrentUser() != null) {
                         mAuth.getCurrentUser().sendEmailVerification()
                                 .addOnCompleteListener(emailTask -> {
                                     if (emailTask.isSuccessful()) {
-                                        Toast.makeText(this,
-                                                "Verification email sent! Please check your Gmail.",
-                                                Toast.LENGTH_LONG).show();
+                                        Toast.makeText(this, "Verification email sent! Please check your Gmail.", Toast.LENGTH_LONG).show();
                                     }
-
-                                    // CRITICAL: Sign out immediately so they can't enter yet
                                     mAuth.signOut();
-                                    finish(); // Go back to login
+                                    finish();
                                 });
                     }
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Account created but profile save failed: "
-                                        + e.getMessage(),
-                                Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Account created but profile save failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 }

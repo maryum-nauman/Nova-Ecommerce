@@ -19,7 +19,6 @@ public class Product {
 
     public Product() {}
 
-    // ── Getters ───────────────────────────────────────────────
     @Exclude
     public String getId()           { return id; }
 
@@ -51,7 +50,6 @@ public class Product {
         return "Rs. " + (int) price;
     }
 
-    // ── Setters ───────────────────────────────────────────────
     @Exclude
     public void setId(String id)                    { this.id = id; }
 

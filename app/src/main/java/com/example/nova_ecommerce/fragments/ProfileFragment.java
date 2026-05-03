@@ -72,7 +72,6 @@ public class ProfileFragment extends Fragment {
 
         setupRecommendedRecyclerView();
 
-        // Nav listeners
         View.OnClickListener goToOrders = v -> navigateTo(OrdersFragment.newInstance("all"));
         view.findViewById(R.id.tvViewAllOrders).setOnClickListener(goToOrders);
         view.findViewById(R.id.layoutStatOrders).setOnClickListener(goToOrders);
@@ -83,7 +82,6 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.layoutShipped).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Shipped")));
         view.findViewById(R.id.layoutDelivered).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Delivered")));
 
-        // Edit Profile Navigation (Edit icon next to profile pic)
         view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> navigateTo(new EditProfileFragment()));
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -171,7 +169,6 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadProfile() {
-        // Use addValueEventListener to reflect changes immediately when returning from EditProfileFragment
         userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

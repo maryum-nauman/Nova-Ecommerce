@@ -115,7 +115,6 @@ public class DealAdapter extends
                     Toast.LENGTH_SHORT).show();
         });
 
-        // Card click → detail
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onDealClick(product);
         });

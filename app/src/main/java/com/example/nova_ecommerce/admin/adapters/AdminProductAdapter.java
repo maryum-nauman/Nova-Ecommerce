@@ -17,8 +17,7 @@ import com.example.nova_ecommerce.models.Product;
 
 import java.util.List;
 
-public class AdminProductAdapter extends
-        RecyclerView.Adapter<AdminProductAdapter.ViewHolder> {
+public class AdminProductAdapter extends RecyclerView.Adapter<AdminProductAdapter.ViewHolder> {
 
     public interface OnEditClickListener   {
         void onEdit(Product product);
@@ -32,10 +31,7 @@ public class AdminProductAdapter extends
     private final OnEditClickListener   onEdit;
     private final OnDeleteClickListener onDelete;
 
-    public AdminProductAdapter(Context context,
-                               List<Product> list,
-                               OnEditClickListener onEdit,
-                               OnDeleteClickListener onDelete) {
+    public AdminProductAdapter(Context context, List<Product> list, OnEditClickListener onEdit, OnDeleteClickListener onDelete) {
         this.context  = context;
         this.list     = list;
         this.onEdit   = onEdit;
@@ -44,8 +40,7 @@ public class AdminProductAdapter extends
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
-                                         int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_admin_product, parent, false);
         return new ViewHolder(view);

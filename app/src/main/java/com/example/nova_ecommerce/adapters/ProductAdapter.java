@@ -108,11 +108,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
         // Favorite icon
         holder.btnFavorite.setImageResource(
-                product.isFavorite()
-                        ? R.drawable.ic_favorite
-                        : R.drawable.ic_favorite_border);
+                product.isFavorite() ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
 
-        // Favorite toggle
         holder.btnFavorite.setOnClickListener(v -> {
             boolean nowFav = !product.isFavorite();
             product.setFavorite(nowFav);
@@ -140,21 +137,16 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 favData.put("categoryId",   product.getCategoryId());
                 favData.put("categoryName", product.getCategoryName());
 
-                favRef.setValue(favData)   // ← was favRef.setValue(product)
+                favRef.setValue(favData)
                         .addOnSuccessListener(unused ->
-                                Toast.makeText(context,
-                                        "Added to favorites!",
-                                        Toast.LENGTH_SHORT).show());
+                                Toast.makeText(context, "Added to favorites!", Toast.LENGTH_SHORT).show());
             } else {
                 favRef.removeValue()
                         .addOnSuccessListener(unused ->
-                                Toast.makeText(context,
-                                        "Removed from favorites",
-                                        Toast.LENGTH_SHORT).show());
+                                Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show());
             }
         });
 
-        // Add to cart
         holder.btnAddToCart.setOnClickListener(v -> {
             CartItem item = new CartItem(
                     product.getId(),
@@ -170,7 +162,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     Toast.LENGTH_SHORT).show();
         });
 
-        // Card click → detail
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onProductClick(product);
         });
@@ -179,7 +170,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @Override
     public int getItemCount() { return productList.size(); }
 
-    // Filter by name, categoryName, or description
     public void filter(String query, List<Product> fullList) {
         productList.clear();
         if (query.isEmpty()) {
@@ -189,7 +179,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             for (Product p : fullList) {
                 if ((p.getName() != null
                         && p.getName().toLowerCase().contains(lower))
-                        || (p.getCategoryName() != null          // ← categoryName now
+                        || (p.getCategoryName() != null
                         && p.getCategoryName().toLowerCase().contains(lower))
                         || (p.getDescription() != null
                         && p.getDescription().toLowerCase().contains(lower))) {

@@ -21,7 +21,6 @@ public class AdminOrder {
 
     public AdminOrder() {}
 
-    // ── Getters ───────────────────────────────────────────────
     public String getOrderId()       { return orderId; }
     public String getUserId()        { return userId; }
     public String getFullName()      { return fullName; }
@@ -35,8 +34,6 @@ public class AdminOrder {
     public String getTimestamp()     { return timestamp; }
     public double getTotalAmount()   { return totalAmount; }
     public List<Map<String, Object>> getItems() { return items; }
-
-    // ── Setters ───────────────────────────────────────────────
     public void setOrderId(String orderId)         { this.orderId = orderId; }
     public void setUserId(String userId)           { this.userId = userId; }
     public void setFullName(String fullName)       { this.fullName = fullName; }

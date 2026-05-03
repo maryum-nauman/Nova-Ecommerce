@@ -30,8 +30,7 @@ public class Login extends AppCompatActivity {
     private FirebaseAuth     mAuth;
     private SharedPreferences sharedPreferences;
 
-    // Track which role card is selected
-    private String selectedRole = "user"; // default
+    private String selectedRole = "user";
 
     private static final String PREF_NAME    = "NovaPrefs";
     private static final String KEY_REMEMBER = "isRemembered";
@@ -54,7 +53,6 @@ public class Login extends AppCompatActivity {
         TextView tvSignUp    = findViewById(R.id.tvGoToSignUp);
         TextView tvForgotPass = findViewById(R.id.tvForgotPass);
 
-        // Auto-login
         if (mAuth.getCurrentUser() != null
                 && sharedPreferences.getBoolean(KEY_REMEMBER, false)) {
             redirectBasedOnRole(
@@ -62,16 +60,12 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        // ── Role toggle cards ─────────────────────────────────
-        selectRole("user"); // default highlighted
-
+        selectRole("user");
         tvRoleUser.setOnClickListener(v  -> selectRole("user"));
         tvRoleAdmin.setOnClickListener(v -> selectRole("admin"));
 
-        // ── Forgot password ───────────────────────────────────
         tvForgotPass.setOnClickListener(v -> showForgotPasswordDialog());
 
-        // ── Login ─────────────────────────────────────────────
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             String pass  = etPassword.getText().toString().trim();
@@ -91,29 +85,18 @@ public class Login extends AppCompatActivity {
                             if (user == null) return;
 
                             if ("admin".equals(selectedRole)) {
-                                // Admin: skip email verification
-                                checkUserRoleFromDatabase(
-                                        user.getUid());
+                                checkUserRoleFromDatabase(user.getUid());
                             } else {
-                                // User: must verify email
-                                user.reload().addOnCompleteListener(
-                                        reload -> {
-                                            if (user.isEmailVerified()) {
-                                                checkUserRoleFromDatabase(
-                                                        user.getUid());
+                                user.reload().addOnCompleteListener(reload -> {
+                                            if (user.isEmailVerified()) {checkUserRoleFromDatabase(user.getUid());
                                             } else {
                                                 mAuth.signOut();
-                                                Toast.makeText(this,
-                                                        "Please verify your email first!",
-                                                        Toast.LENGTH_LONG).show();
+                                                Toast.makeText(this, "Please verify your email first!", Toast.LENGTH_LONG).show();
                                             }
                                         });
                             }
                         } else {
-                            Toast.makeText(this,
-                                    "Login failed: "
-                                            + task.getException()
-                                            .getMessage(),
+                            Toast.makeText(this, "Login failed: " + task.getException().getMessage(),
                                     Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -123,50 +106,28 @@ public class Login extends AppCompatActivity {
                 startActivity(new Intent(Login.this, SignUp.class)));
     }
 
-    // ── Highlight selected role card ──────────────────────────
     private void selectRole(String role) {
         selectedRole = role;
 
         if ("user".equals(role)) {
-            // User card — active
-            tvRoleUser.setBackgroundResource(
-                    R.drawable.role_card_selected);
-            tvRoleUser.setTextColor(
-                    getColor(R.color.colorPrimary));
-
-            // Admin card — inactive
-            tvRoleAdmin.setBackgroundResource(
-                    R.drawable.role_card_unselected);
-            tvRoleAdmin.setTextColor(
-                    getResources().getColor(
-                            android.R.color.darker_gray, null));
+            tvRoleUser.setBackgroundResource(R.drawable.role_card_selected);
+            tvRoleUser.setTextColor(getColor(R.color.colorPrimary));
+            tvRoleAdmin.setBackgroundResource(R.drawable.role_card_unselected);
+            tvRoleAdmin.setTextColor(getResources().getColor(android.R.color.darker_gray, null));
         } else {
-            // Admin card — active
-            tvRoleAdmin.setBackgroundResource(
-                    R.drawable.role_card_selected);
-            tvRoleAdmin.setTextColor(
-                    getColor(R.color.colorPrimary));
-
-            // User card — inactive
-            tvRoleUser.setBackgroundResource(
-                    R.drawable.role_card_unselected);
-            tvRoleUser.setTextColor(
-                    getResources().getColor(
-                            android.R.color.darker_gray, null));
+            tvRoleAdmin.setBackgroundResource(R.drawable.role_card_selected);
+            tvRoleAdmin.setTextColor(getColor(R.color.colorPrimary));
+            tvRoleUser.setBackgroundResource(R.drawable.role_card_unselected);
+            tvRoleUser.setTextColor(getResources().getColor(android.R.color.darker_gray, null));
         }
     }
 
-    // ── Forgot password dialog ────────────────────────────────
     private void showForgotPasswordDialog() {
-        android.view.View dialogView = getLayoutInflater()
-                .inflate(R.layout.dialog_forgot_password, null);
-        EditText etResetEmail = dialogView.findViewById(
-                R.id.etResetEmail);
+        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_forgot_password, null);
+        EditText etResetEmail = dialogView.findViewById(R.id.etResetEmail);
 
-        // Pre-fill if user already typed email
         String currentEmail = etEmail.getText().toString().trim();
-        if (!currentEmail.isEmpty()) {
-            etResetEmail.setText(currentEmail);
+        if (!currentEmail.isEmpty()) {etResetEmail.setText(currentEmail);
         }
 
         new MaterialAlertDialogBuilder(this,
@@ -180,9 +141,7 @@ public class Login extends AppCompatActivity {
 
                     if (resetEmail.isEmpty()
                             || !resetEmail.contains("@")) {
-                        Toast.makeText(this,
-                                "Please enter a valid email",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -192,45 +151,34 @@ public class Login extends AppCompatActivity {
                 .show();
     }
 
-    // ── Send Firebase password reset email ────────────────────
     private void sendPasswordResetEmail(String email) {
         mAuth.sendPasswordResetEmail(email)
                 .addOnSuccessListener(unused ->
                         new MaterialAlertDialogBuilder(this,
                                 R.style.MaterialAlertDialog_Nova)
                                 .setTitle("Email Sent ✅")
-                                .setMessage(
-                                        "A password reset link has been sent to:\n\n"
-                                                + email
-                                                + "\n\nCheck your inbox and follow the link to reset your password.")
+                                .setMessage("A password reset link has been sent to:\n\n" + email
+                                        + "\n\nCheck your inbox and follow the link to reset your password.")
                                 .setPositiveButton("OK", null)
                                 .show())
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Failed: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
-    // ── Check role in DB matches selected role ────────────────
     private void checkUserRoleFromDatabase(String uid) {
-        DatabaseReference ref = FirebaseDatabase.getInstance(
-                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
-        ).getReference("users").child(uid);
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("users").child(uid);
 
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    String roleInDb = snapshot.child("role")
-                            .getValue(String.class);
+                    String roleInDb = snapshot.child("role").getValue(String.class);
 
                     if (selectedRole.equals(roleInDb)) {
                         handleLoginSuccess(roleInDb);
                     } else {
                         mAuth.signOut();
-                        Toast.makeText(Login.this,
-                                "Access Denied: Incorrect role selected",
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(Login.this, "Access Denied: Incorrect role selected", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -252,8 +200,7 @@ public class Login extends AppCompatActivity {
         Intent intent = "admin".equals(role)
                 ? new Intent(Login.this, AdminDashboard.class)
                 : new Intent(Login.this, Dashboard.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

@@ -30,29 +30,24 @@ public class AdminDashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
 
-        // ── Logout ────────────────────────────────────────────────
         ImageButton btnLogout = findViewById(R.id.btnAdminLogout);
         btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             getSharedPreferences("NovaPrefs", MODE_PRIVATE)
                     .edit().clear().apply();
             Intent intent = new Intent(AdminDashboard.this, Login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
 
-        // ── Search ────────────────────────────────────────────────
         etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s,
-                                          int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s,
-                                      int start, int before, int count) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 Fragment current = getSupportFragmentManager()
                         .findFragmentById(R.id.admin_fragment_container);
                 if (current instanceof AdminCategoriesFragment) {
@@ -68,7 +63,6 @@ public class AdminDashboard extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // ── Bottom Navigation ─────────────────────────────────────
         BottomNavigationView bottomNav =
                 findViewById(R.id.admin_bottom_navigation);
 
@@ -80,38 +74,32 @@ public class AdminDashboard extends AppCompatActivity {
                 if (categoriesFragment == null)
                     categoriesFragment = new AdminCategoriesFragment();
                 selectedFragment = categoriesFragment;
-                showSearch();                    // ← show for categories
-
+                showSearch();
             } else if (id == R.id.admin_nav_products) {
                 selectedFragment = new AdminProductsFragment();
-                showSearch();                    // ← show for products
-
+                showSearch();
             } else if (id == R.id.admin_nav_orders) {
                 selectedFragment = new AdminOrdersFragment();
-                hideSearch();                    // ← hide for orders
+                hideSearch();
             }else if (id == R.id.admin_nav_inbox) {
                 selectedFragment = new AdminInboxFragment();
                 hideSearch();
             }
-
             if (selectedFragment != null) loadFragment(selectedFragment);
             return true;
         });
 
-        // ── Default: open Categories tab ──────────────────────────
         categoriesFragment = new AdminCategoriesFragment();
         loadFragment(categoriesFragment);
         bottomNav.setSelectedItemId(R.id.admin_nav_categories);
-        showSearch(); // default tab shows search
+        showSearch();
     }
 
-    // ── Show search bar ───────────────────────────────────────
     private void showSearch() {
         etSearch.setVisibility(View.VISIBLE);
         etSearch.setText("");
     }
 
-    // ── Hide and clear search bar ─────────────────────────────
     private void hideSearch() {
         etSearch.setText("");
         etSearch.setVisibility(View.GONE);

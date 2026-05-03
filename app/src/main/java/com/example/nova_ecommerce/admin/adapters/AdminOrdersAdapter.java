@@ -17,20 +17,17 @@ import com.example.nova_ecommerce.admin.models.AdminOrder;
 import java.util.List;
 import java.util.Map;
 
-public class AdminOrdersAdapter extends
-        RecyclerView.Adapter<AdminOrdersAdapter.OrderViewHolder> {
+public class AdminOrdersAdapter extends RecyclerView.Adapter<AdminOrdersAdapter.OrderViewHolder> {
 
     public interface OnOrderClickListener {
         void onOrderClick(AdminOrder order);
     }
 
-    private final Context             context;
-    private final List<AdminOrder>         orderList;
+    private final Context context;
+    private final List<AdminOrder> orderList;
     private final OnOrderClickListener listener;
 
-    public AdminOrdersAdapter(Context context,
-                              List<AdminOrder> orderList,
-                              OnOrderClickListener listener) {
+    public AdminOrdersAdapter(Context context, List<AdminOrder> orderList, OnOrderClickListener listener) {
         this.context   = context;
         this.orderList = orderList;
         this.listener  = listener;
@@ -38,40 +35,29 @@ public class AdminOrdersAdapter extends
 
     @NonNull
     @Override
-    public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
-                                              int viewType) {
+    public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_admin_order, parent, false);
         return new OrderViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull OrderViewHolder holder,
-                                 int position) {
+    public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         AdminOrder order = orderList.get(position);
 
-        holder.tvOrderId.setText("#" + order.getOrderId()
-                .substring(Math.max(0,
-                        order.getOrderId().length() - 8)));
+        holder.tvOrderId.setText("#" + order.getOrderId().substring(Math.max(0, order.getOrderId().length() - 8)));
         holder.tvCustomerName.setText(order.getFullName());
         holder.tvTimestamp.setText(order.getTimestamp());
-        holder.tvTotal.setText("Rs. " + String.format(
-                "%,.0f", order.getTotalAmount()));
+        holder.tvTotal.setText("Rs. " + String.format("%,.0f", order.getTotalAmount()));
         holder.tvPayment.setText(order.getPaymentMethod());
 
-        // Item count
-        int itemCount = order.getItems() != null
-                ? order.getItems().size() : 0;
-        holder.tvItemCount.setText(itemCount
-                + (itemCount == 1 ? " item" : " items"));
+        int itemCount = order.getItems() != null ? order.getItems().size() : 0;
+        holder.tvItemCount.setText(itemCount + (itemCount == 1 ? " item" : " items"));
 
-        // Status badge color
         holder.tvStatus.setText(order.getStatus());
-        holder.tvStatus.setBackgroundColor(
-                getStatusColor(order.getStatus()));
+        holder.tvStatus.setBackgroundColor(getStatusColor(order.getStatus()));
 
-        holder.cardOrder.setOnClickListener(
-                v -> listener.onOrderClick(order));
+        holder.cardOrder.setOnClickListener(v -> listener.onOrderClick(order));
     }
 
     private int getStatusColor(String status) {
@@ -91,8 +77,7 @@ public class AdminOrdersAdapter extends
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
         CardView cardOrder;
-        TextView tvOrderId, tvCustomerName, tvTimestamp,
-                tvTotal, tvStatus, tvItemCount, tvPayment;
+        TextView tvOrderId, tvCustomerName, tvTimestamp, tvTotal, tvStatus, tvItemCount, tvPayment;
 
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);

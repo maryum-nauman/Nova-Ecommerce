@@ -4,7 +4,7 @@ import com.google.firebase.database.PropertyName;
 
 public class CartItem {
 
-    private String docId;       // SQLite row id
+    private String docId;
     private String productId;
     private String categoryId;
     private String name;
@@ -12,10 +12,8 @@ public class CartItem {
     private String imageUrl;
     private int    quantity;
 
-    // ── Empty constructor (needed for Firebase/SQLite) ───────────
     public CartItem() {}
 
-    // ── Full constructor ──────────────────────────────────────
     public CartItem(String productId, String name,
                     double price, String imageUrl, int quantity) {
         this.productId = productId;
@@ -25,16 +23,15 @@ public class CartItem {
         this.quantity  = quantity;
     }
 
-    // ── Getters ───────────────────────────────────────────────
     public String getDocId()      { return docId; }
     public String getProductId()  { return productId; }
     public String getCategoryId() { return categoryId; }
     public String getName()       { return name; }
     public double getPrice()      { return price; }
 
-    @PropertyName("imageURL") // Matches Firebase key
+    @PropertyName("imageURL")
     public String getImageUrl()   { return imageUrl; }
-    @PropertyName("imageURL") // Matches Firebase key
+    @PropertyName("imageURL")
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public int    getQuantity()   { return quantity; }
@@ -43,7 +40,6 @@ public class CartItem {
         return "Rs. " + (int)(price * quantity);
     }
 
-    // ── Setters ───────────────────────────────────────────────
     public void setDocId(String docId)           { this.docId = docId; }
     public void setProductId(String productId)   { this.productId = productId; }
     public void setCategoryId(String categoryId) { this.categoryId = categoryId; }

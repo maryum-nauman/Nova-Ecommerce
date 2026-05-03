@@ -29,17 +29,13 @@ public class CartFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_cart, container, false);
-
         recyclerCart = view.findViewById(R.id.recyclerCart);
         tvTotal = view.findViewById(R.id.tvTotal);
         tvEmptyCart = view.findViewById(R.id.tvEmptyCart);
         btnCheckout = view.findViewById(R.id.btnCheckout);
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user == null) {
@@ -54,31 +50,23 @@ public class CartFragment extends Fragment {
         cartAdapter = new CartAdapter(getContext(), cartList, this::refreshCart);
         recyclerCart.setAdapter(cartAdapter);
 
-        cartAdapter = new CartAdapter(
-                getContext(), cartList, this::refreshCart);
+        cartAdapter = new CartAdapter(getContext(), cartList, this::refreshCart);
         recyclerCart.setAdapter(cartAdapter);
 
-// ── Navigate to product detail on cart item click ─────────
         cartAdapter.setOnItemClickListener(item -> {
             String productId = item.getProductId();
             String categoryId = item.getCategoryId();
 
-            if (productId == null || categoryId == null
-                    || categoryId.isEmpty()) {
-                Toast.makeText(getContext(),
-                        "Product details unavailable",
-                        Toast.LENGTH_SHORT).show();
+            if (productId == null || categoryId == null || categoryId.isEmpty()) {
+                Toast.makeText(getContext(), "Product details unavailable", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container,
-                            ProductDetailFragment.newInstance(
-                                    productId, categoryId))
+                    .replace(R.id.fragment_container, ProductDetailFragment.newInstance(productId, categoryId))
                     .addToBackStack(null)
                     .commit();
         });
-
         refreshCart();
 
         btnCheckout.setOnClickListener(v -> {
@@ -106,10 +94,7 @@ public class CartFragment extends Fragment {
         cartList.clear();
         cartList.addAll(cartDb.getAllItems(currentUserId));
         cartAdapter.notifyDataSetChanged();
-
         tvEmptyCart.setVisibility(cartList.isEmpty() ? View.VISIBLE : View.GONE);
-
-        tvTotal.setText("Rs. " +
-                String.format("%,.0f", cartDb.getTotal(currentUserId)));
+        tvTotal.setText("Rs. " + String.format("%,.0f", cartDb.getTotal(currentUserId)));
     }
 }

@@ -63,11 +63,9 @@ public class ChatMessageAdapter extends
         holder.tvTime.setText(formatTime(msg.getTimestamp()));
     }
 
-    // ── Call this before notifyDataSetChanged() ───────────────
     public void sortByTimestamp() {
         Collections.sort(messages,
-                (a, b) -> Long.compare(a.getTimestamp(),
-                        b.getTimestamp()));
+                (a, b) -> Long.compare(a.getTimestamp(), b.getTimestamp()));
     }
 
     private String formatTime(long timestamp) {
