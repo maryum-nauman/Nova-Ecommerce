@@ -55,6 +55,9 @@ public class EditProfileFragment extends Fragment {
     private String currentName, currentEmail, currentPhone,
             currentAddress, currentImageUrl;
 
+    private String confirmedOldEmail    = "";
+    private String confirmedOldPassword = "";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -82,10 +85,15 @@ public class EditProfileFragment extends Fragment {
         tvDeleteAccount = view.findViewById(R.id.tvDeleteAccount);
         tvLogout        = view.findViewById(R.id.tvLogout);
 
+        etEmail.setEnabled(false);
+        etEmail.setFocusable(false);
+        etEmail.setFocusableInTouchMode(false);
+
         loadUserData();
 
         btnBack.setOnClickListener(v ->
                 getParentFragmentManager().popBackStack());
+
         btnSave.setOnClickListener(v -> validateAndSave());
         tvDeleteAccount.setOnClickListener(v -> showDeleteConfirmation());
         tvLogout.setOnClickListener(v -> logoutAndRedirect());
@@ -93,9 +101,9 @@ public class EditProfileFragment extends Fragment {
         return view;
     }
 
-    // ── Load profile from DB ──────────────────────────────────
     private void loadUserData() {
         if (userRef == null) return;
+
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
@@ -120,14 +128,13 @@ public class EditProfileFragment extends Fragment {
                             .into(imgEditAvatar);
                 }
             }
+
             @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
     }
 
-    // ── Route by what changed ─────────────────────────────────
     private void validateAndSave() {
         String newName     = etName.getText().toString().trim();
-        String newEmail    = etEmail.getText().toString().trim();
         String newPhone    = etPhone.getText().toString().trim();
         String newAddress  = etAddress.getText().toString().trim();
         String newPassword = etPassword.getText().toString().trim();
@@ -138,28 +145,23 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
-        boolean emailChanged    = !newEmail.equalsIgnoreCase(currentEmail);
         boolean phoneChanged    = !TextUtils.equals(newPhone, currentPhone);
         boolean passwordChanged = !TextUtils.isEmpty(newPassword);
         boolean infoOnly        = !newName.equals(currentName)
                 || !TextUtils.equals(newAddress, currentAddress);
 
-        if (!emailChanged && !phoneChanged && !passwordChanged && !infoOnly) {
+        if (!phoneChanged && !passwordChanged && !infoOnly) {
             Toast.makeText(getContext(),
                     "No changes detected", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (emailChanged && !android.util.Patterns.EMAIL_ADDRESS
-                .matcher(newEmail).matches()) {
-            Toast.makeText(getContext(),
-                    "Invalid email address", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
         if (phoneChanged && newPhone.length() < 10) {
             Toast.makeText(getContext(),
                     "Invalid phone number", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (passwordChanged && newPassword.length() < 6) {
             Toast.makeText(getContext(),
                     "Password must be at least 6 characters",
@@ -167,8 +169,7 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
-        // CASE 1: Password only — old password dialog → update Auth + DB → Login
-        if (passwordChanged && !emailChanged && !phoneChanged) {
+        if (passwordChanged && !phoneChanged) {
             showOldPasswordDialog(oldPass ->
                     reauthThen(oldPass, () ->
                             doPasswordUpdate(newPassword, newName,
@@ -176,27 +177,20 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
-        // CASE 2: Email or phone — old password dialog → OTP → update Auth + DB → Login
-        if (emailChanged || phoneChanged) {
-            String otpTargetEmail = emailChanged ? newEmail : currentEmail;
-            String displayTarget  = emailChanged
-                    ? "new email " + newEmail
-                    : "email " + currentEmail;
-
+        if (phoneChanged) {
             showOldPasswordDialog(oldPass ->
                     reauthThen(oldPass, () ->
-                            sendOtpAndVerify(otpTargetEmail, displayTarget,
-                                    newName, newEmail, newPhone,
-                                    newAddress, emailChanged)));
+                            sendOtpAndVerify(currentEmail,
+                                    "email " + currentEmail,
+                                    newName, newPhone,
+                                    newAddress)));
             return;
         }
 
-        // CASE 3: Name/address only — no re-auth, no redirect
         updateDatabase(newName, newPhone, newAddress,
                 currentEmail, false, null);
     }
 
-    // ── CASE 1: update Auth password then DB ──────────────────
     private void doPasswordUpdate(String newPassword, String name,
                                   String phone, String address) {
         currentUser.updatePassword(newPassword)
@@ -210,12 +204,9 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
-    // ── CASE 2: send OTP then show verify dialog ──────────────
     private void sendOtpAndVerify(String otpEmail, String displayTarget,
-                                  String name, String newEmail,
-                                  String newPhone, String address,
-                                  boolean emailChanged) {
-        // Generate + save OTP to Firebase otps/{userId}
+                                  String name, String newPhone,
+                                  String address) {
         String otp = OtpManager.generateAndSave(userId);
 
         if (isAdded()) Toast.makeText(requireContext(),
@@ -228,8 +219,8 @@ public class EditProfileFragment extends Fragment {
                     public void onSuccess() {
                         if (!isAdded()) return;
                         requireActivity().runOnUiThread(() ->
-                                showOtpVerifyDialog(otp, name, newEmail,
-                                        newPhone, address, emailChanged));
+                                showOtpVerifyDialog(otp, name,
+                                        newPhone, address));
                     }
 
                     @Override
@@ -243,11 +234,9 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
-    // ── OTP entry dialog ──────────────────────────────────────
     private void showOtpVerifyDialog(String expectedOtp,
-                                     String name, String newEmail,
-                                     String newPhone, String address,
-                                     boolean emailChanged) {
+                                     String name, String newPhone,
+                                     String address) {
         EditText etOtp = new EditText(getContext());
         etOtp.setHint("Enter 6-digit OTP");
         etOtp.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -265,10 +254,10 @@ public class EditProfileFragment extends Fragment {
                 .create();
 
         dialog.setOnShowListener(d -> {
-            // Override positive button to prevent auto-dismiss on wrong OTP
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                     .setOnClickListener(v -> {
                         String entered = etOtp.getText().toString().trim();
+
                         if (TextUtils.isEmpty(entered)) {
                             etOtp.setError("Enter the OTP");
                             return;
@@ -277,54 +266,25 @@ public class EditProfileFragment extends Fragment {
                             etOtp.setError("Incorrect OTP");
                             return;
                         }
-                        // ✅ OTP correct
+
                         dialog.dismiss();
-                        if (emailChanged) {
-                            // Re-auth fresh before updateEmail —
-                            // the token from the earlier re-auth may have
-                            // expired by the time the user entered the OTP
-                            showOldPasswordDialog(oldPass -> {
-                                AuthCredential freshCred =
-                                        EmailAuthProvider.getCredential(
-                                                currentUser.getEmail(), oldPass);
-                                currentUser.reauthenticate(freshCred)
-                                        .addOnSuccessListener(u ->
-                                                currentUser.updateEmail(newEmail)
-                                                        .addOnSuccessListener(v2 ->
-                                                                updateDatabase(
-                                                                        name, newPhone,
-                                                                        address, newEmail,
-                                                                        true, null))
-                                                        .addOnFailureListener(e -> {
-                                                            if (isAdded())
-                                                                Toast.makeText(getContext(),
-                                                                        "Email update failed: "
-                                                                                + e.getMessage(),
-                                                                        Toast.LENGTH_LONG).show();
-                                                        }))
-                                        .addOnFailureListener(e -> {
-                                            if (isAdded())
-                                                Toast.makeText(getContext(),
-                                                        "Incorrect password",
-                                                        Toast.LENGTH_SHORT).show();
-                                        });
-                            });
-                        } else {
-                            // Phone only — DB update is enough
-                            updateDatabase(name, newPhone, address,
-                                    currentEmail, true, null);
-                        }
+                        updateDatabase(name, newPhone, address,
+                                currentEmail, true, null);
                     });
         });
 
         dialog.show();
     }
 
-    // ── Re-auth with current password ─────────────────────────
     private void reauthThen(String oldPassword, Runnable onSuccess) {
         if (currentUser == null || currentUser.getEmail() == null) return;
+
+        confirmedOldEmail    = currentUser.getEmail();
+        confirmedOldPassword = oldPassword;
+
         AuthCredential cred = EmailAuthProvider.getCredential(
-                currentUser.getEmail(), oldPassword);
+                confirmedOldEmail, oldPassword);
+
         currentUser.reauthenticate(cred)
                 .addOnSuccessListener(u -> onSuccess.run())
                 .addOnFailureListener(e -> {
@@ -334,7 +294,6 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
-    // ── Ask for current password ──────────────────────────────
     private void showOldPasswordDialog(
             java.util.function.Consumer<String> onConfirmed) {
         EditText etPass = new EditText(getContext());
@@ -362,7 +321,6 @@ public class EditProfileFragment extends Fragment {
                 .show();
     }
 
-    // ── Write to DB, optionally sign out → Login ──────────────
     private void updateDatabase(String name, String phone, String address,
                                 String email, boolean redirectToLogin,
                                 @Nullable String newPassword) {
@@ -393,7 +351,6 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
-    // ── Delete account ────────────────────────────────────────
     private void showDeleteConfirmation() {
         EditText etPass = new EditText(getContext());
         etPass.setHint("Enter password to confirm");
@@ -418,8 +375,10 @@ public class EditProfileFragment extends Fragment {
 
     private void reauthenticateAndDelete(String password) {
         if (currentUser == null || currentUser.getEmail() == null) return;
+
         AuthCredential cred = EmailAuthProvider.getCredential(
                 currentUser.getEmail(), password);
+
         currentUser.reauthenticate(cred)
                 .addOnSuccessListener(u -> {
                     if (userRef != null) {
@@ -446,7 +405,6 @@ public class EditProfileFragment extends Fragment {
                 });
     }
 
-    // ── Sign out → Login ──────────────────────────────────────
     private void logoutAndRedirect() {
         FirebaseAuth.getInstance().signOut();
         if (getActivity() != null) {
@@ -454,6 +412,7 @@ public class EditProfileFragment extends Fragment {
                     .getSharedPreferences("NovaPrefs",
                             android.content.Context.MODE_PRIVATE)
                     .edit().clear().apply();
+
             Intent intent = new Intent(getActivity(), Login.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
