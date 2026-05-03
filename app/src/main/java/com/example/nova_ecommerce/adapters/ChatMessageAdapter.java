@@ -13,6 +13,7 @@ import com.example.nova_ecommerce.R;
 import com.example.nova_ecommerce.models.ChatMessage;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -26,8 +27,6 @@ public class ChatMessageAdapter extends
     private final Context           context;
     private final List<ChatMessage> messages;
     private final boolean           isAdminView;
-    // isAdminView = true  → admin is viewing, admin bubbles are "sent"
-    // isAdminView = false → user is viewing,  user bubbles are "sent"
 
     public ChatMessageAdapter(Context context,
                               List<ChatMessage> messages,
@@ -40,8 +39,6 @@ public class ChatMessageAdapter extends
     @Override
     public int getItemViewType(int position) {
         ChatMessage msg = messages.get(position);
-        // If admin view and message is from admin → sent
-        // If user view and message is NOT from admin → sent
         boolean isSent = isAdminView ? msg.isAdmin() : !msg.isAdmin();
         return isSent ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
     }
@@ -64,6 +61,13 @@ public class ChatMessageAdapter extends
         ChatMessage msg = messages.get(position);
         holder.tvMessage.setText(msg.getMessage());
         holder.tvTime.setText(formatTime(msg.getTimestamp()));
+    }
+
+    // ── Call this before notifyDataSetChanged() ───────────────
+    public void sortByTimestamp() {
+        Collections.sort(messages,
+                (a, b) -> Long.compare(a.getTimestamp(),
+                        b.getTimestamp()));
     }
 
     private String formatTime(long timestamp) {

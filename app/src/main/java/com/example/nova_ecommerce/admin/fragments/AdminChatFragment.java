@@ -118,6 +118,10 @@ public class AdminChatFragment extends Fragment {
                                 messageList.add(msg);
                             }
                         }
+
+                        // ── Sort oldest → newest before displaying ─
+                        adapter.sortByTimestamp();
+
                         adapter.notifyDataSetChanged();
                         if (!messageList.isEmpty()) {
                             recyclerChat.scrollToPosition(
