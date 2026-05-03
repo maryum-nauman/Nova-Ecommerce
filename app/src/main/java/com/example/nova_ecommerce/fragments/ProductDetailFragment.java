@@ -232,6 +232,14 @@ public class ProductDetailFragment extends Fragment {
 
         // Favorite toggle
         btnFavorite.setOnClickListener(v -> {
+
+            // TEMP DEBUG — remove after fixing
+            android.util.Log.d("FAV_DEBUG", "=== FAVORITE TAPPED ===");
+            android.util.Log.d("FAV_DEBUG", "userId = " + userId);
+            android.util.Log.d("FAV_DEBUG", "productId = " + (currentProduct != null ? currentProduct.getId() : "NULL PRODUCT"));
+            android.util.Log.d("FAV_DEBUG", "isFav = " + (currentProduct != null ? currentProduct.isFavorite() : "N/A"));
+            // ... your existing code continues unchanged below
+
             boolean nowFav = !currentProduct.isFavorite();
             currentProduct.setFavorite(nowFav);
             updateFavoriteIcon();
@@ -242,6 +250,8 @@ public class ProductDetailFragment extends Fragment {
                     ).getReference("users")
                     .child(userId).child("favorites")
                     .child(currentProduct.getId());
+
+
 
             if (nowFav) {
                 Map<String, Object> favData = new HashMap<>();

@@ -77,15 +77,17 @@ public class ProfileFragment extends Fragment {
         tvShippedCount  = view.findViewById(R.id.tvShippedCount);
         tvDeliveredCount= view.findViewById(R.id.tvDeliveredCount);
 
-        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(v -> navigateTo(new OrdersFragment()));
-        view.findViewById(R.id.layoutStatOrders).setOnClickListener(v -> navigateTo(new OrdersFragment()));
+        // Navigation click listeners
+        View.OnClickListener goToOrders = v -> navigateTo(new OrdersFragment());
+        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(goToOrders);
+        view.findViewById(R.id.layoutStatOrders).setOnClickListener(goToOrders);
         view.findViewById(R.id.layoutStatFavs).setOnClickListener(v -> navigateTo(new FavoritesFragment()));
         view.findViewById(R.id.layoutStatCart).setOnClickListener(v -> navigateTo(new CartFragment()));
 
         // Status filter shortcuts (also go to orders for now)
-        view.findViewById(R.id.layoutPending).setOnClickListener(v -> navigateTo(new OrdersFragment()));
-        view.findViewById(R.id.layoutShipped).setOnClickListener(v -> navigateTo(new OrdersFragment()));
-        view.findViewById(R.id.layoutDelivered).setOnClickListener(v -> navigateTo(new OrdersFragment()));
+        view.findViewById(R.id.layoutPending).setOnClickListener(goToOrders);
+        view.findViewById(R.id.layoutShipped).setOnClickListener(goToOrders);
+        view.findViewById(R.id.layoutDelivered).setOnClickListener(goToOrders);
 
         // Edit avatar tap
         view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> {
