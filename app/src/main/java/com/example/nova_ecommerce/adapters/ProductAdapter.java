@@ -29,7 +29,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
 
@@ -126,7 +128,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     .child(product.getId());
 
             if (nowFav) {
-                favRef.setValue(product)
+                Map<String, Object> favData = new HashMap<>();
+                favData.put("name",         product.getName());
+                favData.put("price",        product.getPrice());
+                favData.put("imageURL",     product.getImageURL());
+                favData.put("description",  product.getDescription());
+                favData.put("rating",       product.getRating());
+                favData.put("reviewCount",  product.getReviewCount());
+                favData.put("stock",        product.getStock());
+                favData.put("isFeatured",   product.isFeatured());
+                favData.put("categoryId",   product.getCategoryId());
+                favData.put("categoryName", product.getCategoryName());
+
+                favRef.setValue(favData)   // ← was favRef.setValue(product)
                         .addOnSuccessListener(unused ->
                                 Toast.makeText(context,
                                         "Added to favorites!",

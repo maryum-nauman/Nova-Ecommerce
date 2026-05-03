@@ -264,7 +264,7 @@ public class ProductDetailFragment extends Fragment {
                 favData.put("stock",        currentProduct.getStock());
                 favData.put("categoryId",   currentProduct.getCategoryId());    // ← critical
                 favData.put("categoryName", currentProduct.getCategoryName());
-                favRef.setValue(currentProduct);
+                favRef.setValue(favData);
                 Toast.makeText(getContext(),
                         "Added to favorites!", Toast.LENGTH_SHORT).show();
             } else {

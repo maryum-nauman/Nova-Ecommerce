@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <ProgressBar
+        android:id="@+id/progressPayment"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:indeterminateTint="@color/colorPrimary"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:id="@+id/tvPaymentStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Processing..."
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#1A1A2E"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please do not close the app"
+        android:textSize="12sp"
+        android:textColor="#AAAAAA"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
