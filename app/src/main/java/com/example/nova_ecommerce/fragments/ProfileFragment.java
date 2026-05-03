@@ -1,15 +1,12 @@
 package com.example.nova_ecommerce.fragments;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,8 +28,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,14 +51,6 @@ public class ProfileFragment extends Fragment {
     private ProductAdapter recommendedAdapter;
     private final List<Product> recommendedList = new ArrayList<>();
     private final Set<String> addedProductIds = new HashSet<>();
-
-    private final androidx.activity.result.ActivityResultLauncher<Intent> imagePickerLauncher =
-            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri imageUri = result.getData().getData();
-                    if (imageUri != null) uploadProfileImage(imageUri);
-                }
-            });
 
     @Nullable
     @Override
@@ -96,11 +83,8 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.layoutShipped).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Shipped")));
         view.findViewById(R.id.layoutDelivered).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Delivered")));
 
-        view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
-        });
+        // Edit Profile Navigation (Edit icon next to profile pic)
+        view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> navigateTo(new EditProfileFragment()));
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -187,14 +171,21 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadProfile() {
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        // Use addValueEventListener to reflect changes immediately when returning from EditProfileFragment
+        userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!isAdded()) return;
                 String name = snapshot.child("name").getValue(String.class);
-                tvUserName.setText(name != null && !name.isEmpty() ? name : FirebaseAuth.getInstance().getCurrentUser().getEmail().split("@")[0]);
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                tvUserName.setText(!TextUtils.isEmpty(name) ? name : (user != null ? user.getEmail().split("@")[0] : "User"));
+                tvUserEmail.setText(user != null ? user.getEmail() : "");
+
                 String img = snapshot.child("profileImage").getValue(String.class);
-                if (img != null && !img.isEmpty() && !img.contains("placeholder")) {
+                if (!TextUtils.isEmpty(img) && !img.contains("placeholder")) {
                     Glide.with(requireContext()).load(img).circleCrop().placeholder(R.drawable.ic_person).into(imgAvatar);
+                } else {
+                    imgAvatar.setImageResource(R.drawable.ic_person);
                 }
             }
             @Override public void onCancelled(@NonNull DatabaseError error) {}
@@ -203,24 +194,27 @@ public class ProfileFragment extends Fragment {
 
     private void loadCounts() {
         userRef.child("favorites").addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot s) { tvFavCount.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onDataChange(@NonNull DataSnapshot s) { if (isAdded()) tvFavCount.setText(String.valueOf(s.getChildrenCount())); }
             @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
         userRef.child("orders").addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot s) { tvOrderCount.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onDataChange(@NonNull DataSnapshot s) { if (isAdded()) tvOrderCount.setText(String.valueOf(s.getChildrenCount())); }
             @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
         userRef.child("reviews").addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot s) { tvReviewCountProfile.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onDataChange(@NonNull DataSnapshot s) { if (isAdded()) tvReviewCountProfile.setText(String.valueOf(s.getChildrenCount())); }
             @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
-        tvCartCount.setText(String.valueOf(CartDatabaseHelper.getInstance(requireContext()).getAllItems(userId).size()));
+        if (userId != null && isAdded()) {
+            tvCartCount.setText(String.valueOf(CartDatabaseHelper.getInstance(requireContext()).getAllItems(userId).size()));
+        }
     }
 
     private void loadOrderStatusCounts() {
         userRef.child("orders").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!isAdded()) return;
                 int p = 0, s = 0, d = 0;
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     String status = ds.child("status").getValue(String.class);
@@ -238,13 +232,5 @@ public class ProfileFragment extends Fragment {
     private void setBadge(TextView b, int c) {
         if (c > 0) { b.setText(String.valueOf(c)); b.setVisibility(View.VISIBLE); }
         else b.setVisibility(View.GONE);
-    }
-
-    private void uploadProfileImage(Uri uri) {
-        StorageReference ref = FirebaseStorage.getInstance().getReference("profile_images/" + userId + ".jpg");
-        ref.putFile(uri).addOnSuccessListener(task -> ref.getDownloadUrl().addOnSuccessListener(url -> {
-            userRef.child("profileImage").setValue(url.toString());
-            Glide.with(requireContext()).load(url).circleCrop().into(imgAvatar);
-        }));
     }
 }

@@ -1,6 +1,5 @@
 package com.example.nova_ecommerce.fragments;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -10,8 +9,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -19,8 +16,6 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.example.nova_ecommerce.R;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,8 +23,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,16 +39,7 @@ public class EditProfileFragment extends Fragment {
     private FirebaseUser currentUser;
     private String userId;
 
-    private Uri selectedImageUri;
     private String currentName, currentEmail, currentPhone, currentAddress, currentImageUrl;
-
-    private final ActivityResultLauncher<String> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    selectedImageUri = uri;
-                    Glide.with(this).load(uri).circleCrop().into(imgEditAvatar);
-                }
-            });
 
     @Nullable
     @Override
@@ -80,7 +64,6 @@ public class EditProfileFragment extends Fragment {
 
         loadUserData();
 
-        view.findViewById(R.id.btnChangeAvatar).setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
         btnBack.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         btnSave.setOnClickListener(v -> validateAndSave());
 
@@ -88,6 +71,7 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
+        if (userRef == null) return;
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -103,14 +87,14 @@ public class EditProfileFragment extends Fragment {
                     etPhone.setText(currentPhone);
                     etAddress.setText(currentAddress);
 
-                    if (currentImageUrl != null && !currentImageUrl.isEmpty() && !currentImageUrl.contains("placeholder")) {
-                        Glide.with(requireContext()).load(currentImageUrl).circleCrop().placeholder(R.drawable.ic_person).into(imgEditAvatar);
+                    if (!TextUtils.isEmpty(currentImageUrl) && !currentImageUrl.contains("placeholder")) {
+                        if (isAdded()) {
+                            Glide.with(requireContext()).load(currentImageUrl).circleCrop().placeholder(R.drawable.ic_person).into(imgEditAvatar);
+                        }
                     }
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
@@ -128,7 +112,9 @@ public class EditProfileFragment extends Fragment {
 
         boolean emailChanged = !newEmail.equals(currentEmail);
         boolean passwordChanged = !TextUtils.isEmpty(newPassword);
-        boolean otherChanged = !newName.equals(currentName) || !newPhone.equals(currentPhone) || !newAddress.equals(currentAddress) || selectedImageUri != null;
+        boolean otherChanged = !newName.equals(currentName) || 
+                              (currentPhone != null && !newPhone.equals(currentPhone)) || 
+                              (currentAddress != null && !newAddress.equals(currentAddress));
 
         if (!emailChanged && !passwordChanged && !otherChanged) {
             Toast.makeText(getContext(), "No changes detected", Toast.LENGTH_SHORT).show();
@@ -136,12 +122,9 @@ public class EditProfileFragment extends Fragment {
         }
 
         if (emailChanged || passwordChanged) {
-            // Re-authentication might be required for email/password change
-            // For simplicity in this ecommerce app, we'll try directly or ask for a simple flow
-            // But usually, verifyBeforeUpdateEmail is better.
             updateAuthAndData(newEmail, newPassword, newName, newPhone, newAddress, emailChanged, passwordChanged);
         } else {
-            saveOtherData(newName, newPhone, newAddress);
+            updateDatabase(newName, newPhone, newAddress, currentEmail);
         }
     }
 
@@ -149,11 +132,9 @@ public class EditProfileFragment extends Fragment {
         if (emailChanged) {
             currentUser.verifyBeforeUpdateEmail(email).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Toast.makeText(getContext(), "Verification email sent to new address. Please verify to complete email change.", Toast.LENGTH_LONG).show();
-                    // We can still update other data
-                    saveOtherData(name, phone, address);
+                    Toast.makeText(getContext(), "Verification email sent to " + email + ". Please verify to complete change.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getContext(), "Email update failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Email change failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -168,42 +149,24 @@ public class EditProfileFragment extends Fragment {
             });
         }
 
-        if (!emailChanged) {
-            saveOtherData(name, phone, address);
-        }
+        updateDatabase(name, phone, address, emailChanged ? currentEmail : email);
     }
 
-    private void saveOtherData(String name, String phone, String address) {
-        if (selectedImageUri != null) {
-            uploadImageAndSaveData(name, phone, address);
-        } else {
-            updateDatabase(name, phone, address, currentImageUrl);
-        }
-    }
-
-    private void uploadImageAndSaveData(String name, String phone, String address) {
-        Toast.makeText(getContext(), "Uploading image...", Toast.LENGTH_SHORT).show();
-        StorageReference ref = FirebaseStorage.getInstance().getReference("profile_images/" + userId + ".jpg");
-        ref.putFile(selectedImageUri).addOnSuccessListener(task -> ref.getDownloadUrl().addOnSuccessListener(url -> {
-            updateDatabase(name, phone, address, url.toString());
-        })).addOnFailureListener(e -> {
-            Toast.makeText(getContext(), "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            updateDatabase(name, phone, address, currentImageUrl);
-        });
-    }
-
-    private void updateDatabase(String name, String phone, String address, String imageUrl) {
+    private void updateDatabase(String name, String phone, String address, String email) {
+        if (userRef == null) return;
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
         updates.put("phone", phone);
         updates.put("address", address);
-        updates.put("profileImage", imageUrl);
+        updates.put("email", email);
 
         userRef.updateChildren(updates).addOnSuccessListener(unused -> {
-            Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
-            getParentFragmentManager().popBackStack();
+            if (isAdded()) {
+                Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
+                getParentFragmentManager().popBackStack();
+            }
         }).addOnFailureListener(e -> {
-            Toast.makeText(getContext(), "Failed to update database: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            if (isAdded()) Toast.makeText(getContext(), "DB Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
 }

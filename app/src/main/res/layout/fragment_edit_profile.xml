@@ -23,7 +23,8 @@
                 android:src="@drawable/ic_back"
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_centerVertical="true"/>
+                android:layout_centerVertical="true"
+                android:contentDescription="Back" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -32,9 +33,10 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="#1A1A2E"
-                android:layout_centerInParent="true"/>
+                android:layout_centerInParent="true" />
         </RelativeLayout>
 
+        <!-- Profile Pic (View Only) -->
         <FrameLayout
             android:layout_width="120dp"
             android:layout_height="120dp"
@@ -48,17 +50,8 @@
                 android:src="@drawable/ic_person"
                 android:scaleType="centerCrop"
                 android:background="@drawable/circle_avatar_bg"
-                android:clipToOutline="true"/>
-
-            <ImageView
-                android:id="@+id/btnChangeAvatar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="bottom|end"
-                android:src="@drawable/ic_camera"
-                android:background="@drawable/circle_edit_bg"
-                android:padding="8dp"
-                android:elevation="4dp"/>
+                android:clipToOutline="true"
+                android:contentDescription="Profile Picture" />
         </FrameLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -72,7 +65,7 @@
                 android:id="@+id/etEditName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"/>
+                android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -86,7 +79,7 @@
                 android:id="@+id/etEditEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"/>
+                android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -100,7 +93,7 @@
                 android:id="@+id/etEditPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="phone"/>
+                android:inputType="phone" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -114,7 +107,7 @@
                 android:id="@+id/etEditAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPostalAddress"/>
+                android:inputType="textPostalAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -129,7 +122,7 @@
                 android:id="@+id/etEditPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"/>
+                android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -142,7 +135,7 @@
             android:textStyle="bold"
             android:backgroundTint="@color/colorPrimary"
             android:textColor="#FFFFFF"
-            app:cornerRadius="12dp"/>
+            app:cornerRadius="12dp" />
 
     </LinearLayout>
 </ScrollView>
