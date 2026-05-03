@@ -11,15 +11,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.nova_ecommerce.R;
+import com.example.nova_ecommerce.adapters.ProductAdapter;
 import com.example.nova_ecommerce.database.CartDatabaseHelper;
+import com.example.nova_ecommerce.models.CartItem;
+import com.example.nova_ecommerce.models.Order;
+import com.example.nova_ecommerce.models.Product;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -30,237 +34,217 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class ProfileFragment extends Fragment {
 
-    private static final String DB_URL =
-            "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com";
+    private static final String DB_URL = "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com";
+    private static final String ADMIN_UID = "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
 
-    // ── Views ─────────────────────────────────────────────────
     private ImageView imgAvatar;
     private TextView  tvUserName, tvUserEmail;
-    private TextView  tvOrderCount, tvFavCount, tvCartCount;
+    private TextView  tvOrderCount, tvFavCount, tvCartCount, tvReviewCountProfile;
     private TextView  tvPendingCount, tvShippedCount, tvDeliveredCount;
+    private View      layoutRecommended;
+    private RecyclerView rvRecommended;
 
-    // ── State ─────────────────────────────────────────────────
     private String userId;
     private DatabaseReference userRef;
+    private ProductAdapter recommendedAdapter;
+    private final List<Product> recommendedList = new ArrayList<>();
+    private final Set<String> addedProductIds = new HashSet<>();
 
-    // ── Image picker launcher ─────────────────────────────────
-    private final ActivityResultLauncher<Intent> imagePickerLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK
-                                && result.getData() != null) {
-                            Uri imageUri = result.getData().getData();
-                            if (imageUri != null) uploadProfileImage(imageUri);
-                        }
-                    });
+    private final androidx.activity.result.ActivityResultLauncher<Intent> imagePickerLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) uploadProfileImage(imageUri);
+                }
+            });
 
-    // ─────────────────────────────────────────────────────────
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(
-                R.layout.fragment_profile, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        // Bind views
-        imgAvatar       = view.findViewById(R.id.imgAvatar);
-        tvUserName      = view.findViewById(R.id.tvUserName);
-        tvUserEmail     = view.findViewById(R.id.tvUserEmail);
-        tvOrderCount    = view.findViewById(R.id.tvOrderCount);
-        tvFavCount      = view.findViewById(R.id.tvFavCount);
-        tvCartCount     = view.findViewById(R.id.tvCartCount);
-        tvPendingCount  = view.findViewById(R.id.tvPendingCount);
-        tvShippedCount  = view.findViewById(R.id.tvShippedCount);
-        tvDeliveredCount= view.findViewById(R.id.tvDeliveredCount);
+        imgAvatar = view.findViewById(R.id.imgAvatar);
+        tvUserName = view.findViewById(R.id.tvUserName);
+        tvUserEmail = view.findViewById(R.id.tvUserEmail);
+        tvOrderCount = view.findViewById(R.id.tvOrderCount);
+        tvFavCount = view.findViewById(R.id.tvFavCount);
+        tvCartCount = view.findViewById(R.id.tvCartCount);
+        tvReviewCountProfile = view.findViewById(R.id.tvReviewCountProfile);
+        tvPendingCount = view.findViewById(R.id.tvPendingCount);
+        tvShippedCount = view.findViewById(R.id.tvShippedCount);
+        tvDeliveredCount = view.findViewById(R.id.tvDeliveredCount);
+        layoutRecommended = view.findViewById(R.id.layoutRecommended);
+        rvRecommended = view.findViewById(R.id.rvRecommendedProfile);
 
-        // Navigation click listeners
-        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
-        view.findViewById(R.id.layoutStatOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
+        setupRecommendedRecyclerView();
+
+        // Nav listeners
+        View.OnClickListener goToOrders = v -> navigateTo(OrdersFragment.newInstance("all"));
+        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(goToOrders);
+        view.findViewById(R.id.layoutStatOrders).setOnClickListener(goToOrders);
         view.findViewById(R.id.layoutStatFavs).setOnClickListener(v -> navigateTo(new FavoritesFragment()));
         view.findViewById(R.id.layoutStatCart).setOnClickListener(v -> navigateTo(new CartFragment()));
-
-        // Status filter shortcuts
+        view.findViewById(R.id.layoutStatReviews).setOnClickListener(v -> navigateTo(new UserReviewsFragment()));
         view.findViewById(R.id.layoutPending).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Pending")));
         view.findViewById(R.id.layoutShipped).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Shipped")));
         view.findViewById(R.id.layoutDelivered).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Delivered")));
 
-        // Edit avatar tap
         view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
             imagePickerLauncher.launch(intent);
         });
 
-        // Current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            userId  = user.getUid();
-            userRef = FirebaseDatabase.getInstance(DB_URL)
-                    .getReference("users").child(userId);
-
+            userId = user.getUid();
+            userRef = FirebaseDatabase.getInstance(DB_URL).getReference("users").child(userId);
             tvUserEmail.setText(user.getEmail());
             loadProfile();
             loadCounts();
             loadOrderStatusCounts();
+            loadRecommendations();
         }
 
         return view;
     }
 
-    private void navigateTo(Fragment fragment) {
-        getParentFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+    private void setupRecommendedRecyclerView() {
+        rvRecommended.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recommendedAdapter = new ProductAdapter(getContext(), recommendedList);
+        recommendedAdapter.setOnProductClickListener(product -> 
+            getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, ProductDetailFragment.newInstance(product.getId(), product.getCategoryId()))
                 .addToBackStack(null)
-                .commit();
+                .commit());
+        rvRecommended.setAdapter(recommendedAdapter);
     }
 
-    // ── Load name + profileImage from Realtime DB ─────────────
+    private void loadRecommendations() {
+        if (userId == null) return;
+        userRef.child("orders").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Set<String> orderedCategories = new HashSet<>();
+                Set<String> orderedProductIds = new HashSet<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Order order = ds.getValue(Order.class);
+                    if (order != null && order.getItems() != null) {
+                        for (CartItem item : order.getItems()) {
+                            if (item.getCategoryId() != null) orderedCategories.add(item.getCategoryId());
+                            orderedProductIds.add(item.getProductId());
+                        }
+                    }
+                }
+                if (!orderedCategories.isEmpty()) fetchRelatedProducts(orderedCategories, orderedProductIds);
+            }
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    private void fetchRelatedProducts(Set<String> categories, Set<String> excludeIds) {
+        DatabaseReference prodRef = FirebaseDatabase.getInstance(DB_URL).getReference("products").child(ADMIN_UID);
+        recommendedList.clear();
+        addedProductIds.clear();
+
+        for (String catId : categories) {
+            prodRef.child(catId).child("items").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        String id = ds.getKey();
+                        if (excludeIds.contains(id) || addedProductIds.contains(id)) continue;
+                        
+                        Product p = ds.getValue(Product.class);
+                        if (p != null) {
+                            p.setId(id);
+                            p.setCategoryId(catId);
+                            if (recommendedList.size() < 6) {
+                                recommendedList.add(p);
+                                addedProductIds.add(id);
+                            }
+                        }
+                    }
+                    if (!recommendedList.isEmpty()) {
+                        layoutRecommended.setVisibility(View.VISIBLE);
+                        recommendedAdapter.notifyDataSetChanged();
+                    }
+                }
+                @Override public void onCancelled(@NonNull DatabaseError error) {}
+            });
+        }
+    }
+
+    private void navigateTo(Fragment f) {
+        getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, f).addToBackStack(null).commit();
+    }
+
     private void loadProfile() {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Name — use DB name, fall back to email prefix
                 String name = snapshot.child("name").getValue(String.class);
-                if (name != null && !name.isEmpty()) {
-                    tvUserName.setText(name);
-                } else {
-                    FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
-                    if (u != null && u.getEmail() != null) {
-                        tvUserName.setText(u.getEmail().split("@")[0]);
-                    }
-                }
-
-                // Profile image
-                String imageUrl = snapshot.child("profileImage")
-                        .getValue(String.class);
-                if (imageUrl != null && !imageUrl.isEmpty()
-                        && !imageUrl.contains("placeholder")) {
-                    Glide.with(requireContext())
-                            .load(imageUrl)
-                            .circleCrop()
-                            .placeholder(R.drawable.ic_person)
-                            .into(imgAvatar);
+                tvUserName.setText(name != null && !name.isEmpty() ? name : FirebaseAuth.getInstance().getCurrentUser().getEmail().split("@")[0]);
+                String img = snapshot.child("profileImage").getValue(String.class);
+                if (img != null && !img.isEmpty() && !img.contains("placeholder")) {
+                    Glide.with(requireContext()).load(img).circleCrop().placeholder(R.drawable.ic_person).into(imgAvatar);
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            @Override public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    // ── Load stats counts ─────────────────────────────────────
     private void loadCounts() {
-        if (userId == null) return;
-
-        // Favorites — Firebase Realtime DB
-        userRef.child("favorites")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        tvFavCount.setText(
-                                String.valueOf(snapshot.getChildrenCount()));
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError e) {
-                        tvFavCount.setText("0");
-                    }
-                });
-
-        // Orders total — Firebase Realtime DB
-        userRef.child("orders")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        tvOrderCount.setText(
-                                String.valueOf(snapshot.getChildrenCount()));
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError e) {
-                        tvOrderCount.setText("0");
-                    }
-                });
-
-        // Cart — local SQLite (Fixed: passing userId)
-        int cartCount = CartDatabaseHelper
-                .getInstance(requireContext())
-                .getAllItems(userId)
-                .size();
-        tvCartCount.setText(String.valueOf(cartCount));
+        userRef.child("favorites").addValueEventListener(new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot s) { tvFavCount.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onCancelled(@NonNull DatabaseError e) {}
+        });
+        userRef.child("orders").addValueEventListener(new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot s) { tvOrderCount.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onCancelled(@NonNull DatabaseError e) {}
+        });
+        userRef.child("reviews").addValueEventListener(new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot s) { tvReviewCountProfile.setText(String.valueOf(s.getChildrenCount())); }
+            @Override public void onCancelled(@NonNull DatabaseError e) {}
+        });
+        tvCartCount.setText(String.valueOf(CartDatabaseHelper.getInstance(requireContext()).getAllItems(userId).size()));
     }
 
-    // ── Load per-status order counts ──────────────────────────
     private void loadOrderStatusCounts() {
-        userRef.child("orders")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        int pending = 0, shipped = 0, delivered = 0;
-
-                        for (DataSnapshot order : snapshot.getChildren()) {
-                            String status = order.child("status")
-                                    .getValue(String.class);
-                            if (status == null) continue;
-                            switch (status.toLowerCase()) {
-                                case "pending":   pending++;   break;
-                                case "shipped":   shipped++;   break;
-                                case "delivered": delivered++; break;
-                            }
-                        }
-
-                        setBadge(tvPendingCount,   pending);
-                        setBadge(tvShippedCount,   shipped);
-                        setBadge(tvDeliveredCount, delivered);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError e) {}
-                });
+        userRef.child("orders").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int p = 0, s = 0, d = 0;
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    String status = ds.child("status").getValue(String.class);
+                    if (status == null) continue;
+                    if (status.equalsIgnoreCase("pending")) p++;
+                    else if (status.equalsIgnoreCase("shipped")) s++;
+                    else if (status.equalsIgnoreCase("delivered")) d++;
+                }
+                setBadge(tvPendingCount, p); setBadge(tvShippedCount, s); setBadge(tvDeliveredCount, d);
+            }
+            @Override public void onCancelled(@NonNull DatabaseError e) {}
+        });
     }
 
-    /** Shows badge with count; hides it when count is 0. */
-    private void setBadge(TextView badge, int count) {
-        if (count > 0) {
-            badge.setText(String.valueOf(count));
-            badge.setVisibility(View.VISIBLE);
-        } else {
-            badge.setVisibility(View.GONE);
-        }
+    private void setBadge(TextView b, int c) {
+        if (c > 0) { b.setText(String.valueOf(c)); b.setVisibility(View.VISIBLE); }
+        else b.setVisibility(View.GONE);
     }
 
-    // ── Upload profile image to Firebase Storage ──────────────
-    private void uploadProfileImage(Uri imageUri) {
-        Toast.makeText(getContext(),
-                "Uploading photo…", Toast.LENGTH_SHORT).show();
-
-        StorageReference storageRef = FirebaseStorage.getInstance()
-                .getReference("profile_images/" + userId + ".jpg");
-
-        storageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        storageRef.getDownloadUrl()
-                                .addOnSuccessListener(downloadUri -> {
-                                    String url = downloadUri.toString();
-
-                                    // 1. Update DB
-                                    userRef.child("profileImage").setValue(url);
-
-                                    // 2. Update UI immediately
-                                    Glide.with(requireContext())
-                                            .load(url)
-                                            .circleCrop()
-                                            .into(imgAvatar);
-
-                                    Toast.makeText(getContext(),
-                                            "Profile photo updated!",
-                                            Toast.LENGTH_SHORT).show();
-                                }))
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(),
-                                "Upload failed: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show());
+    private void uploadProfileImage(Uri uri) {
+        StorageReference ref = FirebaseStorage.getInstance().getReference("profile_images/" + userId + ".jpg");
+        ref.putFile(uri).addOnSuccessListener(task -> ref.getDownloadUrl().addOnSuccessListener(url -> {
+            userRef.child("profileImage").setValue(url.toString());
+            Glide.with(requireContext()).load(url).circleCrop().into(imgAvatar);
+        }));
     }
 }
