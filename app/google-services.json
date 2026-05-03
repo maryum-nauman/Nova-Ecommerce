@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "643425900938",
+    "firebase_url": "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com",
     "project_id": "nova-ecommerce-cb3bf",
     "storage_bucket": "nova-ecommerce-cb3bf.firebasestorage.app"
   },
