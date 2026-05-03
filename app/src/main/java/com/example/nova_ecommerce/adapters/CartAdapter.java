@@ -18,14 +18,22 @@ import com.example.nova_ecommerce.models.CartItem;
 
 import java.util.List;
 
-public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
+public class CartAdapter extends
+        RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
-    private Context context;
-    private List<CartItem> cartList;
-    private CartDatabaseHelper cartDb;
-    private Runnable onCartChanged; // callback to refresh total in fragment
+    // ── New click interface ───────────────────────────────────
+    public interface OnItemClickListener {
+        void onItemClick(CartItem item);
+    }
 
-    public CartAdapter(Context context, List<CartItem> cartList,
+    private final Context            context;
+    private final List<CartItem>     cartList;
+    private final CartDatabaseHelper cartDb;
+    private final Runnable           onCartChanged;
+    private       OnItemClickListener itemClickListener;
+
+    public CartAdapter(Context context,
+                       List<CartItem> cartList,
                        Runnable onCartChanged) {
         this.context       = context;
         this.cartList      = cartList;
@@ -33,16 +41,23 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         this.onCartChanged = onCartChanged;
     }
 
+    // ── Set from CartFragment ─────────────────────────────────
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.itemClickListener = listener;
+    }
+
     @NonNull
     @Override
-    public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+                                             int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_cart, parent, false);
         return new CartViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull CartViewHolder holder,
+                                 int position) {
         CartItem item = cartList.get(position);
 
         holder.tvCartItemName.setText(item.getName());
@@ -53,6 +68,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 .load(item.getImageUrl())
                 .placeholder(R.color.colorPrimary)
                 .into(holder.imgCartItem);
+
+        // ── Card click → product detail ───────────────────────
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(item);
+            }
+        });
 
         // Increase quantity
         holder.btnIncrease.setOnClickListener(v -> {
@@ -67,7 +89,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.btnDecrease.setOnClickListener(v -> {
             int newQty = item.getQuantity() - 1;
             if (newQty <= 0) {
-                // Remove item
                 cartDb.deleteItem(item.getDocId());
                 cartList.remove(position);
                 notifyItemRemoved(position);

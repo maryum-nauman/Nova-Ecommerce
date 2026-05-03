@@ -54,6 +54,31 @@ public class CartFragment extends Fragment {
         cartAdapter = new CartAdapter(getContext(), cartList, this::refreshCart);
         recyclerCart.setAdapter(cartAdapter);
 
+        cartAdapter = new CartAdapter(
+                getContext(), cartList, this::refreshCart);
+        recyclerCart.setAdapter(cartAdapter);
+
+// ── Navigate to product detail on cart item click ─────────
+        cartAdapter.setOnItemClickListener(item -> {
+            String productId = item.getProductId();
+            String categoryId = item.getCategoryId();
+
+            if (productId == null || categoryId == null
+                    || categoryId.isEmpty()) {
+                Toast.makeText(getContext(),
+                        "Product details unavailable",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container,
+                            ProductDetailFragment.newInstance(
+                                    productId, categoryId))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         refreshCart();
 
         btnCheckout.setOnClickListener(v -> {
