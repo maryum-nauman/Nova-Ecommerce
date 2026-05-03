@@ -10,7 +10,7 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- ── Header / Avatar Banner ─────────────────────── -->
+        <!-- ── Header ────────────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,12 +20,10 @@
             android:paddingBottom="24dp"
             android:background="#FFFFFF">
 
-            <!-- Avatar + edit pencil overlay -->
             <FrameLayout
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 android:layout_gravity="center">
-
                 <ImageView
                     android:id="@+id/imgAvatar"
                     android:layout_width="96dp"
@@ -34,8 +32,6 @@
                     android:scaleType="centerCrop"
                     android:background="@drawable/circle_avatar_bg"
                     android:clipToOutline="true"/>
-
-                <!-- Edit pencil badge -->
                 <ImageView
                     android:id="@+id/btnEditAvatar"
                     android:layout_width="28dp"
@@ -47,7 +43,6 @@
                     android:elevation="4dp"/>
             </FrameLayout>
 
-            <!-- Name -->
             <TextView
                 android:id="@+id/tvUserName"
                 android:layout_width="wrap_content"
@@ -58,7 +53,6 @@
                 android:textStyle="bold"
                 android:textColor="#1A1A2E"/>
 
-            <!-- Email -->
             <TextView
                 android:id="@+id/tvUserEmail"
                 android:layout_width="wrap_content"
@@ -67,10 +61,9 @@
                 android:text="user@email.com"
                 android:textSize="13sp"
                 android:textColor="#9E9E9E"/>
-
         </LinearLayout>
 
-        <!-- ── Stats Row ──────────────────────────────────── -->
+        <!-- ── Stats Row (4 Columns) ──────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,23 +88,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="22sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/colorPrimary"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Orders"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textColor="#9E9E9E"/>
             </LinearLayout>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:background="#E0E0E0"/>
+            <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
 
             <!-- Favorites Stat -->
             <LinearLayout
@@ -127,23 +115,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="22sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/colorPrimary"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Favorites"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textColor="#9E9E9E"/>
             </LinearLayout>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="1dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:background="#E0E0E0"/>
+            <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
 
             <!-- In Cart Stat -->
             <LinearLayout
@@ -159,20 +142,46 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="22sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/colorPrimary"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="In Cart"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textColor="#9E9E9E"/>
             </LinearLayout>
 
+            <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
+
+            <!-- Reviews Stat -->
+            <LinearLayout
+                android:id="@+id/layoutStatReviews"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackground">
+                <TextView
+                    android:id="@+id/tvReviewCountProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reviews"
+                    android:textSize="10sp"
+                    android:textColor="#9E9E9E"/>
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- ── My Orders Card ─────────────────────────────── -->
+        <!-- ── My Orders Management Card ──────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -183,13 +192,11 @@
             android:elevation="2dp"
             android:padding="16dp">
 
-            <!-- Header row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
-
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -198,7 +205,6 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="#1A1A2E"/>
-
                 <TextView
                     android:id="@+id/tvViewAllOrders"
                     android:layout_width="wrap_content"
@@ -208,14 +214,12 @@
                     android:textColor="@color/colorPrimary"/>
             </LinearLayout>
 
-            <!-- Order status icons row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="16dp">
 
-                <!-- Pending -->
                 <LinearLayout
                     android:id="@+id/layoutPending"
                     android:layout_width="0dp"
@@ -224,10 +228,7 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="?attr/selectableItemBackground">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -246,7 +247,6 @@
                             android:gravity="center"
                             android:visibility="gone"/>
                     </FrameLayout>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -256,7 +256,6 @@
                         android:textColor="#616161"/>
                 </LinearLayout>
 
-                <!-- Shipped -->
                 <LinearLayout
                     android:id="@+id/layoutShipped"
                     android:layout_width="0dp"
@@ -265,10 +264,7 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="?attr/selectableItemBackground">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -287,7 +283,6 @@
                             android:gravity="center"
                             android:visibility="gone"/>
                     </FrameLayout>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -297,7 +292,6 @@
                         android:textColor="#616161"/>
                 </LinearLayout>
 
-                <!-- Delivered -->
                 <LinearLayout
                     android:id="@+id/layoutDelivered"
                     android:layout_width="0dp"
@@ -306,10 +300,7 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="?attr/selectableItemBackground">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp">
                         <ImageView
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -328,7 +319,6 @@
                             android:gravity="center"
                             android:visibility="gone"/>
                     </FrameLayout>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -337,7 +327,6 @@
                         android:textSize="11sp"
                         android:textColor="#616161"/>
                 </LinearLayout>
-
             </LinearLayout>
         </LinearLayout>
 

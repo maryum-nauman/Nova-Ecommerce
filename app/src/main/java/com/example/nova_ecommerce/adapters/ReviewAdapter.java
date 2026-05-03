@@ -20,10 +20,24 @@ public class ReviewAdapter extends
 
     private final Context       context;
     private final List<Review>  reviewList;
+    private boolean showProductName = false; // Default: show User Name
+    private OnReviewClickListener listener;
+
+    public interface OnReviewClickListener {
+        void onReviewClick(Review review);
+    }
 
     public ReviewAdapter(Context context, List<Review> reviewList) {
         this.context    = context;
         this.reviewList = reviewList;
+    }
+
+    public void setOnReviewClickListener(OnReviewClickListener listener) {
+        this.listener = listener;
+    }
+
+    public void setShowProductName(boolean show) {
+        this.showProductName = show;
     }
 
     @NonNull
@@ -40,17 +54,29 @@ public class ReviewAdapter extends
                                  int position) {
         Review review = reviewList.get(position);
 
-        holder.tvUserName.setText(review.getUserName());
+        // Logic: Show Product Name on Profile, User Name on Product Detail
+        if (showProductName) {
+            holder.tvUserName.setText(review.getProductName());
+        } else {
+            holder.tvUserName.setText(review.getUserName());
+        }
+
         holder.tvComment.setText(review.getComment());
         holder.tvTimestamp.setText(review.getTimestamp());
         holder.ratingBar.setRating((float) review.getRating());
 
         // Show initials avatar
-        String name = review.getUserName();
-        if (name != null && !name.isEmpty()) {
+        String title = showProductName ? review.getProductName() : review.getUserName();
+        if (title != null && !title.isEmpty()) {
             holder.tvAvatar.setText(
-                    String.valueOf(name.charAt(0)).toUpperCase());
+                    String.valueOf(title.charAt(0)).toUpperCase());
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onReviewClick(review);
+            }
+        });
     }
 
     @Override

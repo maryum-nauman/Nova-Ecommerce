@@ -38,7 +38,7 @@ public class ProfileFragment extends Fragment {
     // ── Views ─────────────────────────────────────────────────
     private ImageView imgAvatar;
     private TextView  tvUserName, tvUserEmail;
-    private TextView  tvOrderCount, tvFavCount, tvCartCount;
+    private TextView  tvOrderCount, tvFavCount, tvCartCount, tvReviewCountProfile;
     private TextView  tvPendingCount, tvShippedCount, tvDeliveredCount;
 
     // ── State ─────────────────────────────────────────────────
@@ -67,21 +67,26 @@ public class ProfileFragment extends Fragment {
                 R.layout.fragment_profile, container, false);
 
         // Bind views
-        imgAvatar       = view.findViewById(R.id.imgAvatar);
-        tvUserName      = view.findViewById(R.id.tvUserName);
-        tvUserEmail     = view.findViewById(R.id.tvUserEmail);
-        tvOrderCount    = view.findViewById(R.id.tvOrderCount);
-        tvFavCount      = view.findViewById(R.id.tvFavCount);
-        tvCartCount     = view.findViewById(R.id.tvCartCount);
-        tvPendingCount  = view.findViewById(R.id.tvPendingCount);
-        tvShippedCount  = view.findViewById(R.id.tvShippedCount);
-        tvDeliveredCount= view.findViewById(R.id.tvDeliveredCount);
+        imgAvatar           = view.findViewById(R.id.imgAvatar);
+        tvUserName          = view.findViewById(R.id.tvUserName);
+        tvUserEmail         = view.findViewById(R.id.tvUserEmail);
+        tvOrderCount        = view.findViewById(R.id.tvOrderCount);
+        tvFavCount          = view.findViewById(R.id.tvFavCount);
+        tvCartCount         = view.findViewById(R.id.tvCartCount);
+        tvReviewCountProfile = view.findViewById(R.id.tvReviewCountProfile);
+        tvPendingCount      = view.findViewById(R.id.tvPendingCount);
+        tvShippedCount      = view.findViewById(R.id.tvShippedCount);
+        tvDeliveredCount    = view.findViewById(R.id.tvDeliveredCount);
 
         // Navigation click listeners
-        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
-        view.findViewById(R.id.layoutStatOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
+        View.OnClickListener goToOrders = v -> navigateTo(OrdersFragment.newInstance("all"));
+        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(goToOrders);
+        view.findViewById(R.id.layoutStatOrders).setOnClickListener(goToOrders);
         view.findViewById(R.id.layoutStatFavs).setOnClickListener(v -> navigateTo(new FavoritesFragment()));
         view.findViewById(R.id.layoutStatCart).setOnClickListener(v -> navigateTo(new CartFragment()));
+        
+        // Reviews stat navigation
+        view.findViewById(R.id.layoutStatReviews).setOnClickListener(v -> navigateTo(new UserReviewsFragment()));
 
         // Status filter shortcuts
         view.findViewById(R.id.layoutPending).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Pending")));
@@ -184,7 +189,21 @@ public class ProfileFragment extends Fragment {
                     }
                 });
 
-        // Cart — local SQLite (Fixed: passing userId)
+        // Reviews total — Firebase Realtime DB
+        userRef.child("reviews")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        tvReviewCountProfile.setText(
+                                String.valueOf(snapshot.getChildrenCount()));
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError e) {
+                        tvReviewCountProfile.setText("0");
+                    }
+                });
+
+        // Cart — local SQLite
         int cartCount = CartDatabaseHelper
                 .getInstance(requireContext())
                 .getAllItems(userId)
