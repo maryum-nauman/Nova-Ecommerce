@@ -55,4 +55,5 @@ dependencies {
     implementation("androidx.cardview:cardview:1.0.0")        // Product cards
     implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.stripe:stripe-android:20.48.5")
 }
