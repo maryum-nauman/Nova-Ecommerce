@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA">
@@ -10,7 +11,7 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- ── Header ────────────────────────────────────── -->
+        <!-- ── Header ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,7 +64,7 @@
                 android:textColor="#9E9E9E"/>
         </LinearLayout>
 
-        <!-- ── Stats Row (4 Columns) ──────────────────────── -->
+        <!-- ── Stats Row (4 Columns) ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -74,7 +75,6 @@
             android:elevation="2dp"
             android:padding="16dp">
 
-            <!-- Orders Stat -->
             <LinearLayout
                 android:id="@+id/layoutStatOrders"
                 android:layout_width="0dp"
@@ -101,7 +101,6 @@
 
             <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
 
-            <!-- Favorites Stat -->
             <LinearLayout
                 android:id="@+id/layoutStatFavs"
                 android:layout_width="0dp"
@@ -128,7 +127,6 @@
 
             <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
 
-            <!-- In Cart Stat -->
             <LinearLayout
                 android:id="@+id/layoutStatCart"
                 android:layout_width="0dp"
@@ -155,7 +153,6 @@
 
             <View android:layout_width="1dp" android:layout_height="30dp" android:layout_gravity="center_vertical" android:background="#E0E0E0"/>
 
-            <!-- Reviews Stat -->
             <LinearLayout
                 android:id="@+id/layoutStatReviews"
                 android:layout_width="0dp"
@@ -181,7 +178,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- ── My Orders Management Card ──────────────────── -->
+        <!-- ── My Orders Card ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -328,6 +325,32 @@
                         android:textColor="#616161"/>
                 </LinearLayout>
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Recommended Section ── -->
+        <LinearLayout
+            android:id="@+id/layoutRecommended"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="24dp"
+            android:layout_marginHorizontal="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You Might Also Like"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A2E"
+                android:layout_marginBottom="12dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecommendedProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
         </LinearLayout>
 
     </LinearLayout>
