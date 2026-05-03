@@ -78,16 +78,15 @@ public class ProfileFragment extends Fragment {
         tvDeliveredCount= view.findViewById(R.id.tvDeliveredCount);
 
         // Navigation click listeners
-        View.OnClickListener goToOrders = v -> navigateTo(new OrdersFragment());
-        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(goToOrders);
-        view.findViewById(R.id.layoutStatOrders).setOnClickListener(goToOrders);
+        view.findViewById(R.id.tvViewAllOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
+        view.findViewById(R.id.layoutStatOrders).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("all")));
         view.findViewById(R.id.layoutStatFavs).setOnClickListener(v -> navigateTo(new FavoritesFragment()));
         view.findViewById(R.id.layoutStatCart).setOnClickListener(v -> navigateTo(new CartFragment()));
 
-        // Status filter shortcuts (also go to orders for now)
-        view.findViewById(R.id.layoutPending).setOnClickListener(goToOrders);
-        view.findViewById(R.id.layoutShipped).setOnClickListener(goToOrders);
-        view.findViewById(R.id.layoutDelivered).setOnClickListener(goToOrders);
+        // Status filter shortcuts
+        view.findViewById(R.id.layoutPending).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Pending")));
+        view.findViewById(R.id.layoutShipped).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Shipped")));
+        view.findViewById(R.id.layoutDelivered).setOnClickListener(v -> navigateTo(OrdersFragment.newInstance("Delivered")));
 
         // Edit avatar tap
         view.findViewById(R.id.btnEditAvatar).setOnClickListener(v -> {
@@ -159,7 +158,7 @@ public class ProfileFragment extends Fragment {
 
         // Favorites — Firebase Realtime DB
         userRef.child("favorites")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         tvFavCount.setText(
@@ -173,7 +172,7 @@ public class ProfileFragment extends Fragment {
 
         // Orders total — Firebase Realtime DB
         userRef.child("orders")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         tvOrderCount.setText(
@@ -185,7 +184,7 @@ public class ProfileFragment extends Fragment {
                     }
                 });
 
-        // Cart — local SQLite
+        // Cart — local SQLite (Fixed: passing userId)
         int cartCount = CartDatabaseHelper
                 .getInstance(requireContext())
                 .getAllItems(userId)
@@ -196,7 +195,7 @@ public class ProfileFragment extends Fragment {
     // ── Load per-status order counts ──────────────────────────
     private void loadOrderStatusCounts() {
         userRef.child("orders")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         int pending = 0, shipped = 0, delivered = 0;

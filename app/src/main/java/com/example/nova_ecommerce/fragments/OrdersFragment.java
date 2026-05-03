@@ -29,11 +29,30 @@ import java.util.List;
 
 public class OrdersFragment extends Fragment {
 
+    private static final String ARG_FILTER_STATUS = "filterStatus";
+
     private RecyclerView rvOrders;
     private OrderAdapter adapter;
     private final List<Order> orderList = new ArrayList<>();
-    private TextView tvNoOrders;
+    private TextView tvNoOrders, tvTitle;
     private ImageButton btnBack;
+    private String filterStatus = "all";
+
+    public static OrdersFragment newInstance(String status) {
+        OrdersFragment fragment = new OrdersFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_FILTER_STATUS, status);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            filterStatus = getArguments().getString(ARG_FILTER_STATUS, "all");
+        }
+    }
 
     @Nullable
     @Override
@@ -42,7 +61,17 @@ public class OrdersFragment extends Fragment {
 
         rvOrders = view.findViewById(R.id.rvOrders);
         tvNoOrders = view.findViewById(R.id.tvNoOrders);
+        tvTitle = view.findViewById(R.id.tvOrdersTitle); // Assuming ID in layout
         btnBack = view.findViewById(R.id.btnBackOrders);
+
+        // Update Title based on filter
+        if (tvTitle != null) {
+            if ("all".equalsIgnoreCase(filterStatus)) {
+                tvTitle.setText("My Orders");
+            } else {
+                tvTitle.setText(filterStatus.substring(0, 1).toUpperCase() + filterStatus.substring(1).toLowerCase() + " Orders");
+            }
+        }
 
         adapter = new OrderAdapter(getContext(), orderList);
 
@@ -70,9 +99,13 @@ public class OrdersFragment extends Fragment {
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Order order = ds.getValue(Order.class);
                     if (order != null) {
-                        // Set orderId from the database key
                         order.setOrderId(ds.getKey());
-                        orderList.add(order);
+                        
+                        // Apply Filter
+                        if ("all".equalsIgnoreCase(filterStatus) || 
+                            (order.getStatus() != null && order.getStatus().equalsIgnoreCase(filterStatus))) {
+                            orderList.add(order);
+                        }
                     }
                 }
                 // Show newest orders first

@@ -23,6 +23,7 @@
             android:contentDescription="Back" />
 
         <TextView
+            android:id="@+id/tvOrdersTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
