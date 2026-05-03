@@ -6,11 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -110,22 +112,52 @@ public class EditProfileFragment extends Fragment {
             return;
         }
 
-        boolean emailChanged = !newEmail.equals(currentEmail);
+        boolean emailChanged = !newEmail.equalsIgnoreCase(currentEmail);
         boolean passwordChanged = !TextUtils.isEmpty(newPassword);
-        boolean otherChanged = !newName.equals(currentName) || 
-                              (currentPhone != null && !newPhone.equals(currentPhone)) || 
-                              (currentAddress != null && !newAddress.equals(currentAddress));
+        boolean phoneChanged = !TextUtils.equals(newPhone, currentPhone);
+        boolean infoChanged = !newName.equals(currentName) || !TextUtils.equals(newAddress, currentAddress);
 
-        if (!emailChanged && !passwordChanged && !otherChanged) {
+        if (!emailChanged && !passwordChanged && !phoneChanged && !infoChanged) {
             Toast.makeText(getContext(), "No changes detected", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (emailChanged || passwordChanged) {
+        if (phoneChanged) {
+            showOtpDialog(() -> {
+                if (emailChanged || passwordChanged) {
+                    updateAuthAndData(newEmail, newPassword, newName, newPhone, newAddress, emailChanged, passwordChanged);
+                } else {
+                    updateDatabase(newName, newPhone, newAddress, currentEmail);
+                }
+            });
+        } else if (emailChanged || passwordChanged) {
             updateAuthAndData(newEmail, newPassword, newName, newPhone, newAddress, emailChanged, passwordChanged);
         } else {
             updateDatabase(newName, newPhone, newAddress, currentEmail);
         }
+    }
+
+    private void showOtpDialog(Runnable onSuccess) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_otp, null);
+        EditText etOtp = dialogView.findViewById(R.id.etOtp);
+        Button btnVerify = dialogView.findViewById(R.id.btnVerifyOtp);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        btnVerify.setOnClickListener(v -> {
+            String otp = etOtp.getText().toString().trim();
+            if ("123456".equals(otp)) { // Simulated OTP
+                dialog.dismiss();
+                onSuccess.run();
+            } else {
+                Toast.makeText(getContext(), "Invalid OTP", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
     }
 
     private void updateAuthAndData(String email, String password, String name, String phone, String address, boolean emailChanged, boolean passwordChanged) {
@@ -134,7 +166,7 @@ public class EditProfileFragment extends Fragment {
                 if (task.isSuccessful()) {
                     Toast.makeText(getContext(), "Verification email sent to " + email + ". Please verify to complete change.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(getContext(), "Email change failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Email update failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -149,6 +181,7 @@ public class EditProfileFragment extends Fragment {
             });
         }
 
+        // Save other changes to DB immediately (keeping old email in DB until verification is complete)
         updateDatabase(name, phone, address, emailChanged ? currentEmail : email);
     }
 
@@ -166,7 +199,7 @@ public class EditProfileFragment extends Fragment {
                 getParentFragmentManager().popBackStack();
             }
         }).addOnFailureListener(e -> {
-            if (isAdded()) Toast.makeText(getContext(), "DB Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            if (isAdded()) Toast.makeText(getContext(), "Failed to update database: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
 }

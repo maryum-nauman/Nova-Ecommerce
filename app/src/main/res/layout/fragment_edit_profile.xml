@@ -59,12 +59,14 @@
             android:layout_height="wrap_content"
             android:hint="Full Name"
             android:layout_marginBottom="16dp"
+            app:hintTextColor="#424242"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEditName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#212121"
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -73,12 +75,14 @@
             android:layout_height="wrap_content"
             android:hint="Email Address"
             android:layout_marginBottom="16dp"
+            app:hintTextColor="#424242"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEditEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#212121"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -87,12 +91,14 @@
             android:layout_height="wrap_content"
             android:hint="Phone Number"
             android:layout_marginBottom="16dp"
+            app:hintTextColor="#424242"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEditPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#212121"
                 android:inputType="phone" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,12 +107,14 @@
             android:layout_height="wrap_content"
             android:hint="Address"
             android:layout_marginBottom="16dp"
+            app:hintTextColor="#424242"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEditAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#212121"
                 android:inputType="textPostalAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -116,12 +124,14 @@
             android:hint="New Password (optional)"
             android:layout_marginBottom="24dp"
             app:passwordToggleEnabled="true"
+            app:hintTextColor="#424242"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEditPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="#212121"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
