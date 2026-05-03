@@ -1,10 +1,11 @@
 package com.example.nova_ecommerce.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,9 +28,12 @@ import java.util.List;
 
 public class FavoritesFragment extends Fragment {
 
-    private RecyclerView    recyclerFavorites;
-    private ProductAdapter  adapter;
-    private View layoutEmptyFav;
+    private static final String ADMIN_UID =
+            "48ULkpPhYfVOAAfqcKbD7VtXOyt1";
+
+    private RecyclerView   recyclerFavorites;
+    private ProductAdapter adapter;
+    private View           layoutEmptyFav;
     private DatabaseReference favRef;
 
     private final List<Product> favoriteList = new ArrayList<>();
@@ -43,9 +47,8 @@ public class FavoritesFragment extends Fragment {
                 R.layout.fragment_favorites, container, false);
 
         recyclerFavorites = view.findViewById(R.id.recyclerFavorites);
-        layoutEmptyFav = view.findViewById(R.id.layoutEmptyFav);
+        layoutEmptyFav    = view.findViewById(R.id.layoutEmptyFav);
 
-        // favorites path hasn't changed: users/{userId}/favorites
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             String userId = FirebaseAuth.getInstance()
                     .getCurrentUser().getUid();
@@ -59,18 +62,95 @@ public class FavoritesFragment extends Fragment {
         adapter = new ProductAdapter(getContext(), favoriteList);
         recyclerFavorites.setAdapter(adapter);
 
-        // ── Pass BOTH productId and categoryId to detail ──────
-        adapter.setOnProductClickListener(product ->
-                getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container,
-                                ProductDetailFragment.newInstance(
-                                        product.getId(),
-                                        product.getCategoryId())) // ← new
-                        .addToBackStack(null)
-                        .commit());
+        adapter.setOnProductClickListener(
+                product -> navigateToDetail(product));
 
         loadFavorites();
         return view;
+    }
+
+    private void navigateToDetail(Product product) {
+        String catId     = product.getCategoryId();
+        String productId = product.getId();
+
+        Log.d("FAV_NAV",
+                "productId=" + productId + " | categoryId=" + catId);
+
+        if (catId != null && !catId.isEmpty()) {
+            // categoryId is already known — navigate directly
+            openDetail(productId, catId);
+        } else {
+            // categoryId missing — search all categories for this product
+            findCategoryAndOpen(productId);
+        }
+    }
+
+    // ── Direct navigation ─────────────────────────────────────
+    private void openDetail(String productId, String catId) {
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container,
+                        ProductDetailFragment.newInstance(
+                                productId, catId))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    // ── Fallback: scan all categories to find the product ─────
+    private void findCategoryAndOpen(String productId) {
+        Toast.makeText(getContext(),
+                "Loading...", Toast.LENGTH_SHORT).show();
+
+        DatabaseReference adminRef = FirebaseDatabase.getInstance(
+                "https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com"
+        ).getReference("products").child(ADMIN_UID);
+
+        adminRef.addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(
+                            @NonNull DataSnapshot adminSnap) {
+
+                        for (DataSnapshot catSnap
+                                : adminSnap.getChildren()) {
+                            String catId = catSnap.getKey();
+
+                            // Check if this productId exists under items
+                            if (catSnap.child("items")
+                                    .hasChild(productId)) {
+                                Log.d("FAV_NAV",
+                                        "Found productId=" + productId
+                                                + " in catId=" + catId);
+
+                                // Also update the favorite in DB
+                                // so next time categoryId is available
+                                if (favRef != null) {
+                                    favRef.child(productId)
+                                            .child("categoryId")
+                                            .setValue(catId);
+                                }
+
+                                openDetail(productId, catId);
+                                return;
+                            }
+                        }
+
+                        // Product not found in any category
+                        Log.e("FAV_NAV",
+                                "productId=" + productId
+                                        + " not found in any category");
+                        Toast.makeText(getContext(),
+                                "Product no longer available",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onCancelled(
+                            @NonNull DatabaseError error) {
+                        Toast.makeText(getContext(),
+                                "Error: " + error.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void loadFavorites() {
@@ -80,21 +160,27 @@ public class FavoritesFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 favoriteList.clear();
+
                 for (DataSnapshot child : snapshot.getChildren()) {
                     Product product = child.getValue(Product.class);
                     if (product != null) {
                         product.setId(child.getKey());
                         product.setFavorite(true);
-                        // categoryId and categoryName are stored
-                        // inside the favorite object in Firebase
-                        // because we called favRef.setValue(product)
-                        // which serializes the full Product object
+
+                        // Log what categoryId came back
+                        Log.d("FAV_LOAD",
+                                "id=" + child.getKey()
+                                        + " | categoryId="
+                                        + product.getCategoryId());
+
                         favoriteList.add(product);
                     }
                 }
+
                 adapter.notifyDataSetChanged();
                 layoutEmptyFav.setVisibility(
-                        favoriteList.isEmpty() ? View.VISIBLE : View.GONE);
+                        favoriteList.isEmpty()
+                                ? View.VISIBLE : View.GONE);
             }
 
             @Override
