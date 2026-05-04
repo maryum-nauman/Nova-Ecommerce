@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="10dp">
 
         <ImageView
             android:id="@+id/imgAdminProduct"
@@ -34,7 +34,8 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="1"
-                android:ellipsize="end" />
+                android:ellipsize="end"
+                android:textColor="#1A1A2E" />
 
             <TextView
                 android:id="@+id/tvAdminProductCategory"
@@ -57,22 +58,52 @@
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
                 android:textColor="#555555" />
+
+            <!-- 🔥 Featured toggle badge -->
+            <TextView
+                android:id="@+id/tvFeaturedBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥 Hot Deal"
+                android:textSize="11sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/badge_hot_deal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginTop="4dp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
+        <!-- Action buttons column -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center">
 
+            <!-- Toggle featured -->
+            <ImageButton
+                android:id="@+id/btnToggleFeatured"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_star_border"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Edit -->
             <ImageButton
                 android:id="@+id/btnEditProduct"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_edit"
-                app:tint="@color/colorPrimary" />
+                app:tint="@color/colorPrimary"
+                android:layout_marginBottom="4dp" />
 
+            <!-- Delete -->
             <ImageButton
                 android:id="@+id/btnDeleteProduct"
                 android:layout_width="36dp"

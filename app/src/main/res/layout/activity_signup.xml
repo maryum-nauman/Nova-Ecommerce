@@ -62,7 +62,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="14dp"
                 android:hint="Full Name"
                 app:boxStrokeColor="@color/colorPrimary"
                 app:boxStrokeWidthFocused="2dp"

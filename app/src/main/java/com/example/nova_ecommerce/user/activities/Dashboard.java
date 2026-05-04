@@ -36,8 +36,7 @@ public class Dashboard extends AppCompatActivity {
             getSharedPreferences("NovaPrefs", MODE_PRIVATE)
                     .edit().clear().apply();
             Intent intent = new Intent(Dashboard.this, Login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
@@ -45,18 +44,14 @@ public class Dashboard extends AppCompatActivity {
         EditText etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s,
-                                          int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s,
-                                      int start, int before, int count) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Only filter when ShopFragment is active
-                Fragment current = getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_container);
+                Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
                 if (current instanceof ShopFragment) {
-                    ((ShopFragment) current)
-                            .filterProducts(s.toString().trim());
+                    ((ShopFragment) current).filterProducts(s.toString().trim());
                 }
             }
 

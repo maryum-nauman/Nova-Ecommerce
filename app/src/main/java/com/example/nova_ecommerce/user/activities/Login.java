@@ -80,8 +80,7 @@ public class Login extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, pass)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            com.google.firebase.auth.FirebaseUser user =
-                                    mAuth.getCurrentUser();
+                            com.google.firebase.auth.FirebaseUser user = mAuth.getCurrentUser();
                             if (user == null) return;
 
                             if ("admin".equals(selectedRole)) {
@@ -136,11 +135,9 @@ public class Login extends AppCompatActivity {
                 .setIcon(android.R.drawable.ic_lock_idle_lock)
                 .setView(dialogView)
                 .setPositiveButton("Send Reset Link", (dialog, which) -> {
-                    String resetEmail = etResetEmail.getText()
-                            .toString().trim();
+                    String resetEmail = etResetEmail.getText().toString().trim();
 
-                    if (resetEmail.isEmpty()
-                            || !resetEmail.contains("@")) {
+                    if (resetEmail.isEmpty() || !resetEmail.contains("@")) {
                         Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show();
                         return;
                     }

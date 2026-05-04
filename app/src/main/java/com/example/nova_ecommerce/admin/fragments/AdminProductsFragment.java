@@ -63,8 +63,14 @@ public class AdminProductsFragment extends Fragment {
 
         adminRef = FirebaseDatabase.getInstance("https://nova-ecommerce-cb3bf-default-rtdb.firebaseio.com").getReference("products").child(ADMIN_UID);
         recyclerProducts.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new AdminProductAdapter(getContext(), searchList,
-                product -> showProductDialog(true, product), product -> showDeleteProductDialog(product)
+        // ── Replace adapter initialization in onCreateView ────────
+        adapter = new AdminProductAdapter(
+                getContext(),
+                searchList,
+                product -> showProductDialog(true, product),
+                product -> showDeleteProductDialog(product),
+                (product, newFeaturedState) ->
+                        updateFeaturedInFirebase(product, newFeaturedState)
         );
         recyclerProducts.setAdapter(adapter);
 
@@ -73,7 +79,25 @@ public class AdminProductsFragment extends Fragment {
         loadAllProducts();
         return view;
     }
-
+    private void updateFeaturedInFirebase(Product product,
+                                          boolean isFeatured) {
+        adminRef.child(product.getCategoryId())
+                .child("items")
+                .child(product.getId())
+                .child("isFeatured")
+                .setValue(isFeatured)
+                .addOnSuccessListener(unused -> {
+                    String msg = isFeatured
+                            ? "🔥 Added to Hot Deals!"
+                            : "Removed from Hot Deals";
+                    Toast.makeText(getContext(), msg,
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(getContext(),
+                                "Failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+    }
     private void loadAllProducts() {
         progressBar.setVisibility(View.VISIBLE);
         adminRef.addValueEventListener(new ValueEventListener() {
