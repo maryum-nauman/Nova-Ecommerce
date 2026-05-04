@@ -107,11 +107,12 @@ public class EditProfileFragment extends Fragment {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snap) {
-                currentName     = snap.child("name").getValue(String.class);
-                currentEmail    = snap.child("email").getValue(String.class);
-                currentPhone    = snap.child("phone").getValue(String.class);
-                currentAddress  = snap.child("address").getValue(String.class);
-                currentImageUrl = snap.child("profileImage").getValue(String.class);
+
+                currentName  = getSafeString(snap, "name");
+                currentEmail = getSafeString(snap, "email");
+                currentPhone = getSafeString(snap, "phone");   // FIXED
+                currentAddress = getSafeString(snap, "address");
+                currentImageUrl = getSafeString(snap, "profileImage");
 
                 etName.setText(currentName);
                 etEmail.setText(currentEmail);
@@ -121,6 +122,7 @@ public class EditProfileFragment extends Fragment {
                 if (!TextUtils.isEmpty(currentImageUrl)
                         && !currentImageUrl.contains("placeholder")
                         && isAdded()) {
+
                     Glide.with(requireContext())
                             .load(currentImageUrl)
                             .circleCrop()
@@ -129,8 +131,14 @@ public class EditProfileFragment extends Fragment {
                 }
             }
 
-            @Override public void onCancelled(@NonNull DatabaseError e) {}
+            @Override
+            public void onCancelled(@NonNull DatabaseError e) {}
         });
+    }
+
+    private String getSafeString(DataSnapshot snap, String key) {
+        Object value = snap.child(key).getValue();
+        return value != null ? String.valueOf(value) : "";
     }
 
     private void validateAndSave() {
@@ -385,23 +393,16 @@ public class EditProfileFragment extends Fragment {
                         userRef.removeValue().addOnCompleteListener(t ->
                                 currentUser.delete()
                                         .addOnSuccessListener(v2 -> {
-                                            if (isAdded()) Toast.makeText(
-                                                    getContext(),
-                                                    "Account deleted",
-                                                    Toast.LENGTH_SHORT).show();
+                                            if (isAdded()) Toast.makeText(getContext(), "Account deleted", Toast.LENGTH_SHORT).show();
                                             logoutAndRedirect();
                                         })
                                         .addOnFailureListener(e -> {
-                                            if (isAdded()) Toast.makeText(
-                                                    getContext(),
-                                                    "Delete failed: " + e.getMessage(),
-                                                    Toast.LENGTH_SHORT).show();
+                                            if (isAdded()) Toast.makeText(getContext(), "Delete failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                         }));
                     }
                 })
                 .addOnFailureListener(e -> {
-                    if (isAdded()) Toast.makeText(getContext(),
-                            "Wrong password", Toast.LENGTH_SHORT).show();
+                    if (isAdded()) Toast.makeText(getContext(), "Wrong password", Toast.LENGTH_SHORT).show();
                 });
     }
 
