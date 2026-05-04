@@ -18,22 +18,22 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.Onboarding"
+            android:name=".user.activities.Onboarding"
             android:exported="false" />
         <activity
-            android:name=".activities.Login"
+            android:name=".user.activities.Login"
             android:exported="false" />
         <activity
-            android:name=".activities.SignUp"
+            android:name=".user.activities.SignUp"
             android:exported="false" />
         <activity
-            android:name=".activities.Dashboard"
+            android:name=".user.activities.Dashboard"
             android:exported="false" />
         <activity
             android:name=".admin.activities.AdminDashboard"
             android:exported="false" />
         <activity
-            android:name=".activities.Splash"
+            android:name=".user.activities.Splash"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

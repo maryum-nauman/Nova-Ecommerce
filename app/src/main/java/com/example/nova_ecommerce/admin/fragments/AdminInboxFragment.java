@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nova_ecommerce.R;
 import com.example.nova_ecommerce.admin.adapters.AdminInboxAdapter;
-import com.example.nova_ecommerce.models.ChatPreview;
+import com.example.nova_ecommerce.user.models.ChatPreview;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

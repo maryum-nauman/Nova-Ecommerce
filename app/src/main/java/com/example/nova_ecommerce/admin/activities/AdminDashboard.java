@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.nova_ecommerce.R;
-import com.example.nova_ecommerce.activities.Login;
+import com.example.nova_ecommerce.user.activities.Login;
 import com.example.nova_ecommerce.admin.fragments.AdminCategoriesFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminInboxFragment;
 import com.example.nova_ecommerce.admin.fragments.AdminOrdersFragment;

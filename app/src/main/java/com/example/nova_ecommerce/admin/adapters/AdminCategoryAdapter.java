@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.nova_ecommerce.R;
-import com.example.nova_ecommerce.models.Category;
+import com.example.nova_ecommerce.user.models.Category;
 
 import java.util.List;
 

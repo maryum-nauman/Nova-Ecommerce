@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nova_ecommerce.R;
-import com.example.nova_ecommerce.adapters.ChatMessageAdapter;
-import com.example.nova_ecommerce.models.ChatMessage;
+import com.example.nova_ecommerce.user.adapters.ChatMessageAdapter;
+import com.example.nova_ecommerce.user.models.ChatMessage;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
